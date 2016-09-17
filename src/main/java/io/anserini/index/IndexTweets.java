@@ -102,7 +102,7 @@ public class IndexTweets {
     options.addOption(new Option(OPTIMIZE_OPTION, "merge indexes into a single segment"));
     options.addOption(new Option(STORE_TERM_VECTORS_OPTION, "store term vectors"));
 
-    options.addOption(OptionBuilder.withArgName("dir").hasArg()
+    options.addOption(OptionBuilder.withArgName("collection").hasArg()
         .withDescription("source collection directory").create(COLLECTION_OPTION));
     options.addOption(OptionBuilder.withArgName("dir").hasArg()
         .withDescription("index location").create(INDEX_OPTION));
@@ -129,6 +129,8 @@ public class IndexTweets {
 
     String collectionPath = cmdline.getOptionValue(COLLECTION_OPTION);
     String indexPath = cmdline.getOptionValue(INDEX_OPTION);
+    
+    System.out.println(collectionPath+" "+indexPath);
 
     final FieldType textOptions = new FieldType();
     textOptions.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);

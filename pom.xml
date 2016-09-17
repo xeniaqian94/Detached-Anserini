@@ -108,6 +108,16 @@
               <mainClass>io.anserini.util.DumpDocumentBody</mainClass>
               <name>DumpDocument</name>
             </program>
+            <program>
+              <mainClass>io.anserini.rts.TweetStreamReader</mainClass>
+              <name>TweetStreamReader</name>
+            </program>
+            <program>
+              <mainClass>io.anserini.rts.TweetNaiveSearcher</mainClass>
+              <name>TweetNaiveSearcher</name>
+            </program>
+            
+            
           </programs>
         </configuration>
       </plugin>
