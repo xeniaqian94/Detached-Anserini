@@ -53,6 +53,7 @@ public class TweetStreamReader {
 	final static Object lock = new Object();
 
 	public static void main(String[] args) throws TwitterException, IOException {
+		System.out.println(args[1]);
 		flag = true;
 
 		Options options = new Options();
