@@ -20,6 +20,7 @@ import io.anserini.document.twitter.JsonStatusCorpusReader;
 import io.anserini.document.twitter.Status;
 import io.anserini.document.twitter.StatusStream;
 import io.anserini.index.twitter.TweetAnalyzer;
+import io.anserini.rts.TweetStreamReader.StatusField;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 import java.io.BufferedReader;
@@ -40,6 +41,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
@@ -57,212 +59,209 @@ import org.apache.tools.bzip2.CBZip2InputStream;
  * Reference implementation for indexing statuses.
  */
 public class IndexTweets {
-  private static final Logger LOG = LogManager.getLogger(IndexTweets.class);
+	private static final Logger LOG = LogManager.getLogger(IndexTweets.class);
 
-  public static final Analyzer ANALYZER = new TweetAnalyzer();
-  public static String corpusFormat = null;
+	public static final Analyzer ANALYZER = new TweetAnalyzer();
+	public static String corpusFormat = null;
 
-  private IndexTweets() {}
+	private IndexTweets() {
+	}
 
-  public static enum StatusField {
-    ID("id"),
-    SCREEN_NAME("screen_name"),
-    EPOCH("epoch"),
-    TEXT("text"),
-    LANG("lang"),
-    IN_REPLY_TO_STATUS_ID("in_reply_to_status_id"),
-    IN_REPLY_TO_USER_ID("in_reply_to_user_id"),
-    FOLLOWERS_COUNT("followers_count"),
-    FRIENDS_COUNT("friends_count"),
-    STATUSES_COUNT("statuses_count"),
-    RETWEETED_STATUS_ID("retweeted_status_id"),
-    RETWEETED_USER_ID("retweeted_user_id"),
-    RETWEET_COUNT("retweet_count");
+	public static enum StatusField {
+		ID("id"), SCREEN_NAME("screen_name"), EPOCH("epoch"), TEXT("text"), LANG("lang"), IN_REPLY_TO_STATUS_ID(
+				"in_reply_to_status_id"), IN_REPLY_TO_USER_ID("in_reply_to_user_id"), FOLLOWERS_COUNT(
+						"followers_count"), FRIENDS_COUNT("friends_count"), STATUSES_COUNT(
+								"statuses_count"), RETWEETED_STATUS_ID("retweeted_status_id"), RETWEETED_USER_ID(
+										"retweeted_user_id"), RETWEET_COUNT("retweet_count"),LATITUDE("latitude"), LONGITUDE("longitude");
 
-    public final String name;
+		public final String name;
 
-    StatusField(String s) {
-      name = s;
-    }
-  };
+		StatusField(String s) {
+			name = s;
+		}
+	};
 
-  private static final String HELP_OPTION = "h";
-  private static final String COLLECTION_OPTION = "collection";
-  private static final String INDEX_OPTION = "index";
-  private static final String MAX_ID_OPTION = "max_id";
-  private static final String DELETES_OPTION = "deletes";
-  private static final String OPTIMIZE_OPTION = "optimize";
-  private static final String STORE_TERM_VECTORS_OPTION = "store";
+	private static final String HELP_OPTION = "h";
+	private static final String COLLECTION_OPTION = "collection";
+	private static final String INDEX_OPTION = "index";
+	private static final String MAX_ID_OPTION = "max_id";
+	private static final String DELETES_OPTION = "deletes";
+	private static final String OPTIMIZE_OPTION = "optimize";
+	private static final String STORE_TERM_VECTORS_OPTION = "store";
 
-  @SuppressWarnings("static-access")
-  public static void main(String[] args) throws Exception {
-    Options options = new Options();
+	@SuppressWarnings("static-access")
+	public static void main(String[] args) throws Exception {
+		Options options = new Options();
 
-    options.addOption(new Option(HELP_OPTION, "show help"));
-    options.addOption(new Option(OPTIMIZE_OPTION, "merge indexes into a single segment"));
-    options.addOption(new Option(STORE_TERM_VECTORS_OPTION, "store term vectors"));
+		options.addOption(new Option(HELP_OPTION, "show help"));
+		options.addOption(new Option(OPTIMIZE_OPTION, "merge indexes into a single segment"));
+		options.addOption(new Option(STORE_TERM_VECTORS_OPTION, "store term vectors"));
 
-    options.addOption(OptionBuilder.withArgName("collection").hasArg()
-        .withDescription("source collection directory").create(COLLECTION_OPTION));
-    options.addOption(OptionBuilder.withArgName("dir").hasArg()
-        .withDescription("index location").create(INDEX_OPTION));
-    options.addOption(OptionBuilder.withArgName("file").hasArg()
-        .withDescription("file with deleted tweetids").create(DELETES_OPTION));
-    options.addOption(OptionBuilder.withArgName("id").hasArg()
-        .withDescription("max id").create(MAX_ID_OPTION));
+		options.addOption(OptionBuilder.withArgName("collection").hasArg()
+				.withDescription("source collection directory").create(COLLECTION_OPTION));
+		options.addOption(
+				OptionBuilder.withArgName("dir").hasArg().withDescription("index location").create(INDEX_OPTION));
+		options.addOption(OptionBuilder.withArgName("file").hasArg().withDescription("file with deleted tweetids")
+				.create(DELETES_OPTION));
+		options.addOption(OptionBuilder.withArgName("id").hasArg().withDescription("max id").create(MAX_ID_OPTION));
 
-    CommandLine cmdline = null;
-    CommandLineParser parser = new GnuParser();
-    try {
-      cmdline = parser.parse(options, args);
-    } catch (ParseException exp) {
-      System.err.println("Error parsing command line: " + exp.getMessage());
-      System.exit(-1);
-    }
+		CommandLine cmdline = null;
+		CommandLineParser parser = new GnuParser();
+		try {
+			cmdline = parser.parse(options, args);
+		} catch (ParseException exp) {
+			System.err.println("Error parsing command line: " + exp.getMessage());
+			System.exit(-1);
+		}
 
-    if (cmdline.hasOption(HELP_OPTION) || !cmdline.hasOption(COLLECTION_OPTION)
-        || !cmdline.hasOption(INDEX_OPTION)) {
-      HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp(IndexTweets.class.getName(), options);
-      System.exit(-1);
-    }
+		if (cmdline.hasOption(HELP_OPTION) || !cmdline.hasOption(COLLECTION_OPTION)
+				|| !cmdline.hasOption(INDEX_OPTION)) {
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp(IndexTweets.class.getName(), options);
+			System.exit(-1);
+		}
 
-    String collectionPath = cmdline.getOptionValue(COLLECTION_OPTION);
-    String indexPath = cmdline.getOptionValue(INDEX_OPTION);
-    
-    System.out.println(collectionPath+" "+indexPath);
+		String collectionPath = cmdline.getOptionValue(COLLECTION_OPTION);
+		String indexPath = cmdline.getOptionValue(INDEX_OPTION);
 
-    final FieldType textOptions = new FieldType();
-    textOptions.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
-    textOptions.setStored(true);
-    textOptions.setTokenized(true);        
-    if (cmdline.hasOption(STORE_TERM_VECTORS_OPTION)) {
-      textOptions.setStoreTermVectors(true);
-    }
+		System.out.println(collectionPath + " " + indexPath);
 
-    LOG.info("collection: " + collectionPath);
-    LOG.info("index: " + indexPath);
+		final FieldType textOptions = new FieldType();
+		textOptions.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
+		textOptions.setStored(true);
+		textOptions.setTokenized(true);
+		if (cmdline.hasOption(STORE_TERM_VECTORS_OPTION)) {
+			textOptions.setStoreTermVectors(true);
+			
+		}
 
-    LongOpenHashSet deletes = null;
-    if (cmdline.hasOption(DELETES_OPTION)) {
-      deletes = new LongOpenHashSet();
-      File deletesFile = new File(cmdline.getOptionValue(DELETES_OPTION));
-      if (!deletesFile.exists()) {
-        System.err.println("Error: " + deletesFile + " does not exist!");
-        System.exit(-1);
-      }
-      LOG.info("Reading deletes from " + deletesFile);
-      
-      FileInputStream fin = new FileInputStream(deletesFile);
-      byte[] ignoreBytes = new byte[2];
-      fin.read(ignoreBytes); // "B", "Z" bytes from commandline tools
-      BufferedReader br = new BufferedReader(new InputStreamReader(new CBZip2InputStream(fin)));
+		LOG.info("collection: " + collectionPath);
+		LOG.info("index: " + indexPath);
 
-      String s;
-      while ((s = br.readLine()) != null) {
-        if (s.contains("\t")) {
-          deletes.add(Long.parseLong(s.split("\t")[0]));
-        } else {
-          deletes.add(Long.parseLong(s));
-        }
-      }
-      br.close();
-      fin.close();
-      LOG.info("Read " + deletes.size() + " tweetids from deletes file.");
-    }
+		LongOpenHashSet deletes = null;
+		if (cmdline.hasOption(DELETES_OPTION)) {
+			deletes = new LongOpenHashSet();
+			File deletesFile = new File(cmdline.getOptionValue(DELETES_OPTION));
+			if (!deletesFile.exists()) {
+				System.err.println("Error: " + deletesFile + " does not exist!");
+				System.exit(-1);
+			}
+			LOG.info("Reading deletes from " + deletesFile);
 
-    long maxId = Long.MAX_VALUE;
-    if (cmdline.hasOption(MAX_ID_OPTION)) {
-      maxId = Long.parseLong(cmdline.getOptionValue(MAX_ID_OPTION));
-      LOG.info("index: " + maxId);
-    }
-    
-    long startTime = System.currentTimeMillis();
-    File file = new File(collectionPath);
-    if (!file.exists()) {
-      System.err.println("Error: " + file + " does not exist!");
-      System.exit(-1);
-    }
+			FileInputStream fin = new FileInputStream(deletesFile);
+			byte[] ignoreBytes = new byte[2];
+			fin.read(ignoreBytes); // "B", "Z" bytes from commandline tools
+			BufferedReader br = new BufferedReader(new InputStreamReader(new CBZip2InputStream(fin)));
 
-    StatusStream stream = new JsonStatusCorpusReader(file);
+			String s;
+			while ((s = br.readLine()) != null) {
+				if (s.contains("\t")) {
+					deletes.add(Long.parseLong(s.split("\t")[0]));
+				} else {
+					deletes.add(Long.parseLong(s));
+				}
+			}
+			br.close();
+			fin.close();
+			LOG.info("Read " + deletes.size() + " tweetids from deletes file.");
+		}
 
-    Directory dir = FSDirectory.open(Paths.get(indexPath));
-    final IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
+		long maxId = Long.MAX_VALUE;
+		if (cmdline.hasOption(MAX_ID_OPTION)) {
+			maxId = Long.parseLong(cmdline.getOptionValue(MAX_ID_OPTION));
+			LOG.info("index: " + maxId);
+		}
 
-    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+		long startTime = System.currentTimeMillis();
+		File file = new File(collectionPath);
+		if (!file.exists()) {
+			System.err.println("Error: " + file + " does not exist!");
+			System.exit(-1);
+		}
 
-    IndexWriter writer = new IndexWriter(dir, config);
-    int cnt = 0;
-    Status status;
-    try {
-      while ((status = stream.next()) != null) {
-        if (status.getText() == null) {
-          continue;
-        }
+		StatusStream stream = new JsonStatusCorpusReader(file);
 
-        // Skip deletes tweetids.
-        if (deletes != null && deletes.contains(status.getId())) {
-          continue;
-        }
+		Directory dir = FSDirectory.open(Paths.get(indexPath));
+		final IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
 
-        if (status.getId() > maxId) {
-          continue;
-        }
+		config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
-        cnt++;
-        Document doc = new Document();
-        doc.add(new LongField(StatusField.ID.name, status.getId(), Field.Store.YES));
-        doc.add(new LongField(StatusField.EPOCH.name, status.getEpoch(), Field.Store.YES));
-        doc.add(new TextField(StatusField.SCREEN_NAME.name, status.getScreenname(), Store.YES));
+		IndexWriter writer = new IndexWriter(dir, config);
+		int cnt = 0;
+		Status status;
+		try {
+			while ((status = stream.next()) != null) {
+				if (status.getText() == null) {
+					continue;
+				}
 
-        doc.add(new Field(StatusField.TEXT.name, status.getText(), textOptions));
+				// Skip deletes tweetids.
+				if (deletes != null && deletes.contains(status.getId())) {
+					continue;
+				}
 
-        doc.add(new IntField(StatusField.FRIENDS_COUNT.name, status.getFollowersCount(), Store.YES));
-        doc.add(new IntField(StatusField.FOLLOWERS_COUNT.name, status.getFriendsCount(), Store.YES));
-        doc.add(new IntField(StatusField.STATUSES_COUNT.name, status.getStatusesCount(), Store.YES));
+				if (status.getId() > maxId) {
+					continue;
+				}
 
-        long inReplyToStatusId = status.getInReplyToStatusId();
-        if (inReplyToStatusId > 0) {
-          doc.add(new LongField(StatusField.IN_REPLY_TO_STATUS_ID.name, inReplyToStatusId, Field.Store.YES));
-          doc.add(new LongField(StatusField.IN_REPLY_TO_USER_ID.name, status.getInReplyToUserId(), Field.Store.YES));
-        }
-        
-        String lang = status.getLang();
-        if (!lang.equals("unknown")) {
-          doc.add(new TextField(StatusField.LANG.name, status.getLang(), Store.YES));
-        }
-        
-        long retweetStatusId = status.getRetweetedStatusId();
-        if (retweetStatusId > 0) {
-          doc.add(new LongField(StatusField.RETWEETED_STATUS_ID.name, retweetStatusId, Field.Store.YES));
-          doc.add(new LongField(StatusField.RETWEETED_USER_ID.name, status.getRetweetedUserId(), Field.Store.YES));
-          doc.add(new IntField(StatusField.RETWEET_COUNT.name, status.getRetweetCount(), Store.YES));
-          if ( status.getRetweetCount() < 0 || status.getRetweetedStatusId() < 0) {
-            LOG.warn("Error parsing retweet fields of " + status.getId());
-          }
-        }
-        
-        writer.addDocument(doc);
-        if (cnt % 100000 == 0) {
-          LOG.info(cnt + " statuses indexed");
-        }
-      }
+				cnt++;
+				Document doc = new Document();
+				doc.add(new LongField(StatusField.ID.name, status.getId(), Field.Store.YES));
+				doc.add(new LongField(StatusField.EPOCH.name, status.getEpoch(), Field.Store.YES));
+				doc.add(new TextField(StatusField.SCREEN_NAME.name, status.getScreenname(), Store.YES));
 
-      LOG.info(String.format("Total of %s statuses added", cnt));
-      
-      if (cmdline.hasOption(OPTIMIZE_OPTION)) {
-        LOG.info("Merging segments...");
-        writer.forceMerge(1);
-        LOG.info("Done!");
-      }
+				doc.add(new Field(StatusField.TEXT.name, status.getText(), textOptions));
 
-      LOG.info("Total elapsed time: " + (System.currentTimeMillis() - startTime) + "ms");
-    } catch (Exception e) {
-      e.printStackTrace();
-    } finally {
-      writer.close();
-      dir.close();
-      stream.close();
-    }
-  }
+				doc.add(new IntField(StatusField.FRIENDS_COUNT.name, status.getFollowersCount(), Store.YES));
+				doc.add(new IntField(StatusField.FOLLOWERS_COUNT.name, status.getFriendsCount(), Store.YES));
+				doc.add(new IntField(StatusField.STATUSES_COUNT.name, status.getStatusesCount(), Store.YES));
+				doc.add(new DoubleField(StatusField.LONGITUDE.name, status.getLongitude(), Store.YES));
+				doc.add(new DoubleField(StatusField.LATITUDE.name, status.getlatitude(), Store.YES));
+
+				long inReplyToStatusId = status.getInReplyToStatusId();
+				if (inReplyToStatusId > 0) {
+					doc.add(new LongField(StatusField.IN_REPLY_TO_STATUS_ID.name, inReplyToStatusId, Field.Store.YES));
+					doc.add(new LongField(StatusField.IN_REPLY_TO_USER_ID.name, status.getInReplyToUserId(),
+							Field.Store.YES));
+				}
+
+				String lang = status.getLang();
+				if (!lang.equals("unknown")) {
+					doc.add(new TextField(StatusField.LANG.name, status.getLang(), Store.YES));
+				}
+
+				long retweetStatusId = status.getRetweetedStatusId();
+				if (retweetStatusId > 0) {
+					doc.add(new LongField(StatusField.RETWEETED_STATUS_ID.name, retweetStatusId, Field.Store.YES));
+					doc.add(new LongField(StatusField.RETWEETED_USER_ID.name, status.getRetweetedUserId(),
+							Field.Store.YES));
+					doc.add(new IntField(StatusField.RETWEET_COUNT.name, status.getRetweetCount(), Store.YES));
+					if (status.getRetweetCount() < 0 || status.getRetweetedStatusId() < 0) {
+						LOG.warn("Error parsing retweet fields of " + status.getId());
+					}
+				}
+
+				writer.addDocument(doc);
+				if (cnt % 100000 == 0) {
+					LOG.info(cnt + " statuses indexed");
+				}
+			}
+
+			LOG.info(String.format("Total of %s statuses added", cnt));
+
+			if (cmdline.hasOption(OPTIMIZE_OPTION)) {
+				LOG.info("Merging segments...");
+				writer.forceMerge(1);
+				LOG.info("Done!");
+			}
+
+			LOG.info("Total elapsed time: " + (System.currentTimeMillis() - startTime) + "ms");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			writer.close();
+			dir.close();
+			stream.close();
+		}
+	}
 }

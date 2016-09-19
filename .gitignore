@@ -3,6 +3,8 @@
 .project
 target/
 eval/trec_eval.9.0/
+tweet_index*/
+rawJSON*/
 *~
 bin/
 *.iml
