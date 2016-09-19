@@ -46,6 +46,7 @@ public class JsonStatusCorpusReader implements StatusStream {
 
     files = file.listFiles(new FileFilter() {
       public boolean accept(File path) {
+    	  System.out.println(path.toString()+" "+path.toString().contains("2014"));
         return path.getName().endsWith(".gz") ? true : false;
       }
     });
