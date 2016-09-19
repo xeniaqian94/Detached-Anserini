@@ -75,16 +75,16 @@ public class TweetNaiveSearcher {
 		IndexSearcher searcher = new IndexSearcher(reader);
 		System.out.println("The total number of docs indexed "+searcher.collectionStatistics(TweetStreamReader.StatusField.TEXT.name).docCount());
 
-		// Pittsburgh's coordinate -79.976389, 40.439722
-//		Query q_long = NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LONGITUDE.name,
-//				new Double(-79.926389), new Double(79.976389), true, true);
-//		Query q_lat = NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LATITUDE.name,
-//				new Double(40.389722), new Double(40.489722), true, true);
-		
+//		 Pittsburgh's coordinate -79.976389, 40.439722
 		Query q_long = NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LONGITUDE.name,
-				new Double(0), new Double(90), true, true);
+				new Double(-79.926389), new Double(-79.976389), true, true);
 		Query q_lat = NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LATITUDE.name,
-				new Double(0), new Double(90), true, true);
+				new Double(40.389722), new Double(40.489722), true, true);
+		
+//		Query q_long = NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LONGITUDE.name,
+//				new Double(0), new Double(90), true, true);
+//		Query q_lat = NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LATITUDE.name,
+//				new Double(0), new Double(90), true, true);
 		
 		BooleanQuery bq = new BooleanQuery();
 		bq.add(q_long, BooleanClause.Occur.MUST);
