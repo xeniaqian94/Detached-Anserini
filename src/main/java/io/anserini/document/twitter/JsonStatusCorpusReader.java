@@ -63,6 +63,7 @@ public class JsonStatusCorpusReader implements StatusStream {
   public Status next() throws IOException {
     if (currentBlock == null) {
       currentBlock = new JsonStatusBlockReader(files[nextFile]);
+      System.out.println("Switched to file "+files[nextFile].getName());
       nextFile++;
     }
 

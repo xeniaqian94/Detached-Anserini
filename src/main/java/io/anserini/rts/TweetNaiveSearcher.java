@@ -56,22 +56,22 @@ public class TweetNaiveSearcher {
 			e.printStackTrace();
 		}
 
-		IndexReader newReader = null;
-		try {
-			newReader = DirectoryReader.openIfChanged((DirectoryReader) reader);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (newReader != null) {
-			try {
-				reader.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			reader = newReader;
-		}
+//		IndexReader newReader = null;
+//		try {
+//			newReader = DirectoryReader.openIfChanged((DirectoryReader) reader);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		if (newReader != null) {
+//			try {
+//				reader.close();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			reader = newReader;
+//		}
 		IndexSearcher searcher = new IndexSearcher(reader);
 		System.out.println("The total number of docs indexed "+searcher.collectionStatistics(TweetStreamReader.StatusField.TEXT.name).docCount());
 
