@@ -53,6 +53,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.tools.bzip2.CBZip2InputStream;
 
 /**
@@ -181,7 +182,7 @@ public class IndexTweets {
 
 		StatusStream stream = new JsonStatusCorpusReader(file);
 
-		Directory dir = FSDirectory.open(Paths.get(indexPath));
+		Directory dir = new SimpleFSDirectory(Paths.get(cmdline.getOptionValue(INDEX_OPTION)));
 		final IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
 
 		config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
