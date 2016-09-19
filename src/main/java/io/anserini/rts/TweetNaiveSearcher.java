@@ -96,7 +96,7 @@ public class TweetNaiveSearcher {
 		searcher.search(bq, collector);
 		ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
-		System.out.println("Number of hits for Pittsburgh region" + hits.length);
+		System.out.println("Number of hits for Pittsburgh region " + hits.length);
 		for (int i = 0; i < hits.length; ++i) {
 			int docId = hits[i].doc;
 			Document d;

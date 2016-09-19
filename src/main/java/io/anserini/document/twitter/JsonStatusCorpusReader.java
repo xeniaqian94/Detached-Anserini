@@ -46,8 +46,8 @@ public class JsonStatusCorpusReader implements StatusStream {
 
     files = file.listFiles(new FileFilter() {
       public boolean accept(File path) {
-    	  System.out.println(path.toString()+" "+path.toString().contains("2014"));
-        return path.getName().endsWith(".gz") ? true : false;
+    	System.out.println("Currently checking corpus block .gz "+path.toString()+" "+path.toString().contains("2015-12-"));
+        return (path.getName().endsWith(".gz")&&path.toString().contains("2015-12-")) ? true : false;
       }
     });
     System.out.println("Check recursion: files listed # "+files.length);
