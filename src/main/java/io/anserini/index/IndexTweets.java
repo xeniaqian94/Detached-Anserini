@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
 
@@ -180,14 +181,45 @@ public class IndexTweets {
 			System.exit(-1);
 		}
 
-		StatusStream stream = new JsonStatusCorpusReader(file);
+		
+		final StatusStream stream = new JsonStatusCorpusReader(file);
 
-		Directory dir = new SimpleFSDirectory(Paths.get(cmdline.getOptionValue(INDEX_OPTION)));
+		final Directory dir = new SimpleFSDirectory(Paths.get(cmdline.getOptionValue(INDEX_OPTION)));
 		final IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
 
-		config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+//		config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
-		IndexWriter writer = new IndexWriter(dir, config);
+		final IndexWriter writer = new IndexWriter(dir, config);
+		
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+
+				try {
+					stream.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				};
+
+				
+				System.out.println("# of documents indexed this round:" + writer.numDocs());
+				
+				try {
+					writer.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					dir.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.println("Shutting down");
+
+			}
+		});
 		int cnt = 0;
 		Status status;
 		try {
