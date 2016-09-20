@@ -259,8 +259,9 @@ public class TweetStreamReader {
 					jsonFout.write(rawJSON);
 					jsonFout.newLine();
 					tweetCount++;
-					if (tweetCount % 50 == 0) {
+					if (tweetCount % 2000 == 0) {
 						// Log.info(tweetCount + " statuses indexed");
+						indexWriter.commit();
 
 					}
 				} catch (IOException e) {
