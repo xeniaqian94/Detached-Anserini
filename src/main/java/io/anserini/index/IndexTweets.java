@@ -277,6 +277,7 @@ public class IndexTweets {
 				writer.addDocument(doc);
 				if (cnt % 100000 == 0) {
 					LOG.info(cnt + " statuses indexed");
+					writer.commit();
 				}
 			}
 
