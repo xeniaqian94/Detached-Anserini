@@ -124,11 +124,10 @@ public class TweetNaiveSearcher {
 
 		System.out.println("Total number of inReplyTo are " + collector.getTotalHits() + " " + hits.length);
 		System.out.println("Number of hits for Pittsburgh region " + hits.length);
-		// File chainDirectory=new File("chainDirectory");
+//		File chainDirectory=new File("chainDirectory");
 		// chainDirectory.mkdir();
 		// testRetrieveByID.Initialize();
 
-		
 		for (int i = 0; i < hits.length; ++i) {
 			int docId = hits[i].doc;
 			Document d;
@@ -148,8 +147,9 @@ public class TweetNaiveSearcher {
 					+ d.get(TweetStreamReader.StatusField.LONGITUDE.name) + " "
 					+ d.get(TweetStreamReader.StatusField.LATITUDE.name) + " "
 					+ d.get(TweetStreamReader.StatusField.TEXT.name));
-			Terms t=reader.getTermVector(docId, TweetStreamReader.StatusField.TEXT.name);
-			System.out.println(t.getStats().toString()+t.hasFreqs());
+			Terms t = reader.getTermVector(docId, TweetStreamReader.StatusField.TEXT.name);
+			System.out.println("Terms to string() "+t.toString());
+			System.out.println("t.getStats(): "+t.getStats().toString() +"\nt.hasFreq(): "+t.hasFreqs());
 		}
 		reader.close();
 
