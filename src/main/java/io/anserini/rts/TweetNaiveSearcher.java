@@ -120,9 +120,9 @@ public class TweetNaiveSearcher {
 
 		System.out.println("Total number of inReplyTo are "+collector.getTotalHits()+" "+hits.length);
 		System.out.println("Number of hits for Pittsburgh region " + hits.length);
-		File chainDirectory=new File("chainDirectory");
-		chainDirectory.mkdir();
-		testRetrieveByID.Initialize();
+//		File chainDirectory=new File("chainDirectory");
+//		chainDirectory.mkdir();
+//		testRetrieveByID.Initialize();
 		
 		for (int i = 0; i < hits.length; ++i) {
 			int docId = hits[i].doc;
