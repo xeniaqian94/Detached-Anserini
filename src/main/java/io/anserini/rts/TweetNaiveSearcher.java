@@ -9,8 +9,10 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Terms;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
@@ -30,7 +32,7 @@ import twitter4j.TwitterException;
 public class TweetNaiveSearcher {
 	private static IndexReader reader;
 	private static final String INDEX_OPTION = "index";
-	private static final String CITY_OPTION="city";
+	private static final String CITY_OPTION = "city";
 	private static final String LONGITUDE_OPTION = "longitude";
 	private static final String LATITUDE_OPTION = "latitude";
 
@@ -39,9 +41,9 @@ public class TweetNaiveSearcher {
 
 		Options options = new Options();
 		options.addOption(INDEX_OPTION, true, "index path");
-		options.addOption(CITY_OPTION,true,"city name");
-		options.addOption(LONGITUDE_OPTION,true,"longitude");
-		options.addOption(LATITUDE_OPTION,true,"latitude");
+		options.addOption(CITY_OPTION, true, "city name");
+		options.addOption(LONGITUDE_OPTION, true, "longitude");
+		options.addOption(LATITUDE_OPTION, true, "latitude");
 
 		CommandLine cmdline = null;
 		CommandLineParser parser = new GnuParser();
@@ -85,12 +87,12 @@ public class TweetNaiveSearcher {
 				+ searcher.collectionStatistics(TweetStreamReader.StatusField.TEXT.name).docCount());
 
 		// Pittsburgh's coordinate -79.976389, 40.439722
-		 Query q_long =
-		 NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LONGITUDE.name,
-		 new Double(Double.parseDouble(cmdline.getOptionValue(LONGITUDE_OPTION))-0.05), new Double(Double.parseDouble(cmdline.getOptionValue(LONGITUDE_OPTION))+0.05), true, true);
-		 Query q_lat =
-		 NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LATITUDE.name,
-		 new Double(Double.parseDouble(cmdline.getOptionValue(LATITUDE_OPTION))-0.05), new Double(Double.parseDouble(cmdline.getOptionValue(LATITUDE_OPTION))+0.05), true, true);
+		Query q_long = NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LONGITUDE.name,
+				new Double(Double.parseDouble(cmdline.getOptionValue(LONGITUDE_OPTION)) - 0.05),
+				new Double(Double.parseDouble(cmdline.getOptionValue(LONGITUDE_OPTION)) + 0.05), true, true);
+		Query q_lat = NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LATITUDE.name,
+				new Double(Double.parseDouble(cmdline.getOptionValue(LATITUDE_OPTION)) - 0.05),
+				new Double(Double.parseDouble(cmdline.getOptionValue(LATITUDE_OPTION)) + 0.05), true, true);
 
 		// Query q_long =
 		// NumericRangeQuery.newDoubleRange(TweetStreamReader.StatusField.LONGITUDE.name,
@@ -101,11 +103,13 @@ public class TweetNaiveSearcher {
 
 		BooleanQuery bq = new BooleanQuery();
 
-//		Query q_inReplyTo = NumericRangeQuery.newLongRange(TweetStreamReader.StatusField.IN_REPLY_TO_STATUS_ID.name, 1l,
-//				Long.MAX_VALUE, true, true);
-		
-		 bq.add(q_long, BooleanClause.Occur.MUST);
-		 bq.add(q_lat, BooleanClause.Occur.MUST);
+		// Query q_inReplyTo =
+		// NumericRangeQuery.newLongRange(TweetStreamReader.StatusField.IN_REPLY_TO_STATUS_ID.name,
+		// 1l,
+		// Long.MAX_VALUE, true, true);
+
+		bq.add(q_long, BooleanClause.Occur.MUST);
+		bq.add(q_lat, BooleanClause.Occur.MUST);
 
 		// Query q = new QueryParser(StatusField.TEXT.name,
 		// TweetStreamReader.ANALYZER).parse("love");
@@ -113,32 +117,41 @@ public class TweetNaiveSearcher {
 
 		// First search and scoring part: titleCoordSimilarity(q,d) = Nt/T
 		searcher.search(bq, totalHitCollector);
-		
+
 		TopScoreDocCollector collector = TopScoreDocCollector.create(Math.max(0, totalHitCollector.getTotalHits()));
 		searcher.search(bq, collector);
 		ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
-		System.out.println("Total number of inReplyTo are "+collector.getTotalHits()+" "+hits.length);
+		System.out.println("Total number of inReplyTo are " + collector.getTotalHits() + " " + hits.length);
 		System.out.println("Number of hits for Pittsburgh region " + hits.length);
-//		File chainDirectory=new File("chainDirectory");
-//		chainDirectory.mkdir();
-//		testRetrieveByID.Initialize();
+		// File chainDirectory=new File("chainDirectory");
+		// chainDirectory.mkdir();
+		// testRetrieveByID.Initialize();
+
 		
 		for (int i = 0; i < hits.length; ++i) {
 			int docId = hits[i].doc;
 			Document d;
 
 			d = searcher.doc(docId);
-//			System.out.println("The tail status is "+d.get(TweetStreamReader.StatusField.ID.name)+" will be searching for its inReplyTo "+d.get(TweetStreamReader.StatusField.IN_REPLY_TO_STATUS_ID.name));
-//			testRetrieveByID.getChain(d.get(TweetStreamReader.StatusField.ID.name));
-			
-//			System.out.println(d.get(TweetStreamReader.StatusField.IN_REPLY_TO_STATUS_ID.name)+" "+d.get(TweetStreamReader.StatusField.TEXT.name));
+
+			// System.out.println("The tail status is
+			// "+d.get(TweetStreamReader.StatusField.ID.name)+" will be
+			// searching for its inReplyTo
+			// "+d.get(TweetStreamReader.StatusField.IN_REPLY_TO_STATUS_ID.name));
+			// testRetrieveByID.getChain(d.get(TweetStreamReader.StatusField.ID.name));
+
+			// System.out.println(d.get(TweetStreamReader.StatusField.IN_REPLY_TO_STATUS_ID.name)+"
+			// "+d.get(TweetStreamReader.StatusField.TEXT.name));
 
 			System.out.println(d.get(TweetStreamReader.StatusField.ID.name) + " "
 					+ d.get(TweetStreamReader.StatusField.LONGITUDE.name) + " "
 					+ d.get(TweetStreamReader.StatusField.LATITUDE.name) + " "
 					+ d.get(TweetStreamReader.StatusField.TEXT.name));
+			Terms t=reader.getTermVector(docId, TweetStreamReader.StatusField.TEXT.name);
+			System.out.println(t.getStats().toString()+t.hasFreqs());
 		}
+		reader.close();
 
 	}
 
