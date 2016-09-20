@@ -8,15 +8,19 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.apache.lucene.codecs.TermVectorsReader;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
@@ -24,6 +28,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 
 import io.anserini.nrts.TweetSearcher;
 import io.anserini.nrts.TweetStreamIndexer.StatusField;
@@ -147,9 +152,21 @@ public class TweetNaiveSearcher {
 					+ d.get(TweetStreamReader.StatusField.LONGITUDE.name) + " "
 					+ d.get(TweetStreamReader.StatusField.LATITUDE.name) + " "
 					+ d.get(TweetStreamReader.StatusField.TEXT.name));
-			Terms t = reader.getTermVector(docId, TweetStreamReader.StatusField.TEXT.name);
-			System.out.println("Terms to string() "+t.toString());
-			System.out.println("t.getStats(): "+t.getStats().toString() +"\nt.hasFreq(): "+t.hasFreqs());
+			Terms terms = reader.getTermVector(docId, TweetStreamReader.StatusField.TEXT.name);
+			if (terms != null && terms.size() > 0) {
+			    TermsEnum termsEnum = terms.iterator(); // access the terms for this field
+			    BytesRef term = null;
+			    while ((term = termsEnum.next()) != null) {// explore the terms for this field
+			        DocsEnum docsEnum = termsEnum.docs(null, null); // enumerate through documents, in this case only one
+			        int docIdEnum;
+			        while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+			          System.out.println("	"+term.utf8ToString()+" "+docIdEnum+" "+docsEnum.freq()); //get the term frequency in the document
+
+			        }
+			    }
+			}
+			System.out.println("Terms to string() "+terms.toString());
+			System.out.println("t.getStats(): "+terms.getStats().toString() +"\nt.hasFreq(): "+terms.hasFreqs());
 		}
 		reader.close();
 
