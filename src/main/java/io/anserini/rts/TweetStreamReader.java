@@ -129,6 +129,7 @@ public class TweetStreamReader {
 		textOptions.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
 		textOptions.setStored(true);
 		textOptions.setTokenized(true);
+		textOptions.setStoreTermVectors(true);
 
 		index = new SimpleFSDirectory(Paths.get(cmdline.getOptionValue(INDEX_OPTION)));
 		IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
