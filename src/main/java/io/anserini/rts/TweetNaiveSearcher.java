@@ -130,7 +130,7 @@ public class TweetNaiveSearcher {
 
 				d = searcher.doc(docId);
 
-				rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name));
+				rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));
 				rawTextFout.newLine();
 				docCount += 1;
 				// System.out.println(d.get(TweetStreamReader.StatusField.ID.name)
@@ -176,9 +176,6 @@ public class TweetNaiveSearcher {
 				docVectorsFout.newLine();
 				goldFout.write(cityName[city]);
 				goldFout.newLine();
-				System.out.println("Terms to string() " + terms.toString());
-				System.out
-						.println("t.getStats(): " + terms.getStats().toString() + "\nt.hasFreq(): " + terms.hasFreqs());
 			}
 		}
 		for (String term : dict.keySet()) {
