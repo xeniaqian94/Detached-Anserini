@@ -134,7 +134,7 @@ public class IndexTweets {
 		textOptions.setTokenized(true);
 		if (cmdline.hasOption(STORE_TERM_VECTORS_OPTION)) {
 			textOptions.setStoreTermVectors(true);
-			
+		
 		}
 
 		LOG.info("collection: " + collectionPath);
@@ -186,8 +186,9 @@ public class IndexTweets {
 
 		final Directory dir = new SimpleFSDirectory(Paths.get(cmdline.getOptionValue(INDEX_OPTION)));
 		final IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
+		
 
-//		config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+		config.setOpenMode(IndexWriterConfig.OpenMode.APPEND);
 
 		final IndexWriter writer = new IndexWriter(dir, config);
 		
