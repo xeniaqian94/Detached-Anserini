@@ -164,11 +164,11 @@ public class TweetNaiveSearcher {
 								df.put(termID, df.get(termID) + 1);
 							} else {
 								termID = dict.size();
-								dict.put(thisTerm, dict.size());
+								dict.put(thisTerm, termID);
 								df.put(termID, 1);
 							}
 
-							docVectorsFout.write(termID + ":" + docsEnum.freq());
+							docVectorsFout.write(termID + ":" + docsEnum.freq()+" ");
 
 						}
 					}
@@ -183,7 +183,7 @@ public class TweetNaiveSearcher {
 			dictFout.newLine();
 		}
 		for (int termID : df.keySet()) {
-			dfFout.write(termID + ":" + dict.get(termID));
+			dfFout.write(termID + ":" + df.get(termID));
 			dfFout.newLine();
 		}
 
