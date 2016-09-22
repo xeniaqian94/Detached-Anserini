@@ -44,7 +44,7 @@
 				<artifactId>appassembler-maven-plugin</artifactId>
 				<version>1.10</version>
 				<configuration>
-					<extraJvmArguments>-Xms512M -Xmx2048M</extraJvmArguments>
+					<extraJvmArguments>-Xms512M -Xmx3750M</extraJvmArguments>
 					<programs>
 						<program>
 							<mainClass>io.anserini.ltr.DumpTweetsLtrData</mainClass>
