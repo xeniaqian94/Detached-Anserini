@@ -94,6 +94,7 @@ public class TweetWord2VecSearcher {
 		}
 		WordVectors wordVectors = WordVectorSerializer
 				.loadTxtVectors(new File(cmdline.getOptionValue(WORD2VEC_OPTION)));
+		int emptyCount = 0;
 
 		IndexSearcher searcher = new IndexSearcher(reader);
 		System.out.println("The total number of docs indexed "
@@ -162,25 +163,36 @@ public class TweetWord2VecSearcher {
 						}
 					}
 				}
-				int emptyCount=0;
-				if (termList.size() > 0) {
+
+				if (termList.size() > 1) {
 					INDArray documentVector = wordVectors.getWordVectorsMean(termList);
-					if (documentVector != null)
+					if (null != documentVector) {
 						for (int j = 0; j < documentVector.length(); j++)
 							docVectorsFout.write((j + 1) + ":" + documentVector.getDouble(j) + " ");
-					docVectorsFout.newLine();
-					goldFout.write(cityName[city]);
-					goldFout.newLine();
-				}else {
-					System.out.println("Document "+docCount+" does not has any terms");
-					emptyCount+=1;
-					
-				}
-				System.out.println("Sentence2Vec empty for "+emptyCount+" documents");
+						docVectorsFout.newLine();
+						goldFout.write(cityName[city]);
+						goldFout.newLine();
+					} else
+						emptyCount += 1;
+				} else if (termList.size() == 1) {
+					double[] documentVector = wordVectors.getWordVector(termList.get(0));
+					if (null != documentVector) {
+						for (int j = 0; j < documentVector.length; j++)
+							docVectorsFout.write((j + 1) + ":" + documentVector[j] + " ");
+						docVectorsFout.newLine();
+						goldFout.write(cityName[city]);
+						goldFout.newLine();
+					} else
+						emptyCount += 1;
+				} else {
+					System.out.println("Document " + docCount + " does not has any terms");
+					emptyCount += 1;
 
-				
+				}
+
 			}
 		}
+		System.out.println("Sentence2Vec empty for " + emptyCount + " documents");
 
 		goldFout.close();
 		docVectorsFout.close();
