@@ -162,14 +162,23 @@ public class TweetWord2VecSearcher {
 						}
 					}
 				}
-				INDArray documentVector = wordVectors.getWordVectorsMean(termList);
-				if (documentVector!=null)
-					for (int j = 0; j < documentVector.length(); j++)
-						docVectorsFout.write((j + 1) + ":" + documentVector.getDouble(j) + " ");
+				int emptyCount=0;
+				if (termList.size() > 0) {
+					INDArray documentVector = wordVectors.getWordVectorsMean(termList);
+					if (documentVector != null)
+						for (int j = 0; j < documentVector.length(); j++)
+							docVectorsFout.write((j + 1) + ":" + documentVector.getDouble(j) + " ");
+					docVectorsFout.newLine();
+					goldFout.write(cityName[city]);
+					goldFout.newLine();
+				}else {
+					System.out.println("Document "+docCount+" does not has any terms");
+					emptyCount+=1;
+					
+				}
+				System.out.println("Sentence2Vec empty for "+emptyCount+" documents");
 
-				docVectorsFout.newLine();
-				goldFout.write(cityName[city]);
-				goldFout.newLine();
+				
 			}
 		}
 
