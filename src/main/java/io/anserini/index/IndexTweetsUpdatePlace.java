@@ -223,7 +223,7 @@ public class IndexTweetsUpdatePlace {
 					doc.add(new IntField(StatusField.STATUSES_COUNT.name, status.getStatusesCount(), Store.YES));
 					doc.add(new DoubleField(StatusField.LONGITUDE.name, status.getLongitude(), Store.YES));
 					doc.add(new DoubleField(StatusField.LATITUDE.name, status.getlatitude(), Store.YES));
-					doc.add(new TextField(StatusField.PLACE.name, status.getPlace(), Store.YES));
+					doc.add(new StringField(StatusField.PLACE.name, status.getPlace(), Store.YES));
 					long inReplyToStatusId = status.getInReplyToStatusId();
 					if (inReplyToStatusId > 0) {
 						doc.add(new LongField(StatusField.IN_REPLY_TO_STATUS_ID.name, inReplyToStatusId,
