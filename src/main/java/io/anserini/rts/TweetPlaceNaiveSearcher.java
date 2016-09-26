@@ -147,12 +147,12 @@ class TweetPlaceNaiveSearcher {
 
 			TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
 
-			searcher.search(finalQuery, totalHitCollector);
+			searcher.search(query, totalHitCollector);
 
 			if (totalHitCollector.getTotalHits() > 0) {
 				TopScoreDocCollector collector = TopScoreDocCollector
 						.create(Math.max(0, totalHitCollector.getTotalHits()));
-				searcher.search(finalQuery, collector);
+				searcher.search(query, collector);
 				ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
 				System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
