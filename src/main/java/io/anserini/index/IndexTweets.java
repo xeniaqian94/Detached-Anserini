@@ -48,6 +48,7 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
@@ -253,7 +254,7 @@ public class IndexTweets {
 				doc.add(new DoubleField(StatusField.LATITUDE.name, status.getlatitude(), Store.YES));
 
 				if(status.getPlace()!=null)
-					doc.add(new TextField(StatusField.PLACE.name, status.getPlace(), Store.YES));
+					doc.add(new StringField(StatusField.PLACE.name, status.getPlace(), Store.YES));
 				long inReplyToStatusId = status.getInReplyToStatusId();
 				if (inReplyToStatusId > 0) {
 					doc.add(new LongField(StatusField.IN_REPLY_TO_STATUS_ID.name, inReplyToStatusId, Field.Store.YES));

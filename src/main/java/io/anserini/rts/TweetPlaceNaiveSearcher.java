@@ -55,9 +55,7 @@ class TweetPlaceNaiveSearcher {
 			"Washington, DC", "Houston, TX", "Minneapolis, MN", "Cincinnati, OH", "Portland, ME", "St Louis, MO",
 			"Cleveland, OH", "Pittsburgh, PA" };
 
-	private static final String[][] cityNameAlias = { { "Brooklyn", "Manhattan", "Manhattan, NY" }, { "Chicago" },
-			{ "Los Angeles" }, { "Philadelphia" }, { "Washington" }, { "Houston" }, { "Minneapolis" }, { "Cincinnati" },
-			{ "Portland" }, { "St Louis" }, { "Cleveland" }, { "Pittsburgh" } };
+	private static final String[][] cityNameAlias = { { "Manhattan, NY" }, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {} };
 	private static final Double[] longitude = { -74.0063889, -87.6500000, -118.253842, -75.1641667, -77.0366667,
 			-95.3630556, -93.2636111, -84.4569444, -70.2558333, -90.197778, -81.669722, -79.976389 };
 	private static final Double[] latitude = { 40.7141667, 41.8500000, 34.040667, 39.9522222, 38.8950000, 29.7630556,
@@ -140,8 +138,8 @@ class TweetPlaceNaiveSearcher {
 			TermQuery query = new TermQuery(t);
 			bqCityName.add(query, BooleanClause.Occur.SHOULD);
 			System.out.println(query.toString());
-			
-			for (int i=0;i<cityNameAlias[city].length;i++){
+
+			for (int i = 0; i < cityNameAlias[city].length; i++) {
 				t = new Term("place", cityNameAlias[city][i]);
 				query = new TermQuery(t);
 				bqCityName.add(query, BooleanClause.Occur.SHOULD);
@@ -177,9 +175,11 @@ class TweetPlaceNaiveSearcher {
 					Document d;
 
 					d = searcher.doc(docId);
-					if (d.get((TweetStreamReader.StatusField.PLACE.name)) != null)
-						System.out.print(" " + d.get((TweetStreamReader.StatusField.ID.name)) + " "
-								+ d.get((TweetStreamReader.StatusField.PLACE.name)));
+					// if (d.get((TweetStreamReader.StatusField.PLACE.name)) !=
+					// null)
+					// System.out.print(" " +
+					// d.get((TweetStreamReader.StatusField.ID.name)) + " "
+					// + d.get((TweetStreamReader.StatusField.PLACE.name)));
 
 					rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));
 					rawTextFout.newLine();
