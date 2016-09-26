@@ -139,10 +139,12 @@ class TweetPlaceNaiveSearcher {
 
 			BooleanQuery finalQuery = new BooleanQuery();
 
+			//either a coordinate match
 			bq.add(q_long, BooleanClause.Occur.MUST);
 			bq.add(q_lat, BooleanClause.Occur.MUST);
 
 			finalQuery.add(bq, BooleanClause.Occur.SHOULD);
+			//or a place city name match
 			finalQuery.add(query, BooleanClause.Occur.SHOULD);
 
 			TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
@@ -162,6 +164,9 @@ class TweetPlaceNaiveSearcher {
 					Document d;
 
 					d = searcher.doc(docId);
+					
+					if (d.get(TweetStreamReader.StatusField.PLACE.name)!=null)
+						System.out.print(d.get(TweetStreamReader.StatusField.PLACE.name)+" ");
 
 					rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));
 					rawTextFout.newLine();
