@@ -165,6 +165,7 @@ public class IndexTweetsUpdatePlace {
 		config.setOpenMode(IndexWriterConfig.OpenMode.APPEND);
 
 		final IndexWriter writer = new IndexWriter(dir, config);
+		System.out.print("Original # of docs "+writer.numDocs());
 		int updateCount = 0;
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -255,12 +256,14 @@ public class IndexTweetsUpdatePlace {
 				    
 //					writer.addDocument(doc);
 					
-					System.out.print(" Updated docCount="+writer.numDocs());
+					
 					updateCount += 1;
 					
 					if (updateCount % 10000 == 0) {
+						
 						LOG.info(updateCount + " statuses updated");
 						writer.commit();
+						System.out.println("Updated docCount="+writer.numDocs());
 					}
 
 				}
