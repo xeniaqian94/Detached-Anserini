@@ -80,7 +80,8 @@ public class Status {
 	public String getText() {
 		return text;
 	}
-	public String getPlace(){
+
+	public String getPlace() {
 		return place;
 	}
 
@@ -155,7 +156,6 @@ public class Status {
 		status.id = obj.get("id").getAsLong();
 		status.screenname = obj.get("user").getAsJsonObject().get("screen_name").getAsString();
 		status.createdAt = obj.get("created_at").getAsString();
-		
 
 		try {
 			status.epoch = (new SimpleDateFormat(DATE_FORMAT)).parse(status.createdAt).getTime() / 1000;
@@ -165,9 +165,12 @@ public class Status {
 
 		// TODO: trying to fetch fields and then catching exceptions is bad
 		// practice, fix!
-		
-		status.place = obj.get("place").getAsJsonObject().get("full_name").getAsString();
-		
+		try {
+			status.place = obj.get("place").getAsJsonObject().get("full_name").getAsString();
+		} catch (Exception e) {
+			status.place=null;
+		}
+
 		try {
 			status.inReplyToStatusId = obj.get("in_reply_to_status_id").getAsLong();
 		} catch (Exception e) {
