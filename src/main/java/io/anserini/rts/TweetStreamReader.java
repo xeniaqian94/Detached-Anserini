@@ -244,6 +244,7 @@ public class TweetStreamReader {
 				doc.add(new DoubleField(StatusField.LATITUDE.name, status.getlatitude(), Store.YES));
 				if(status.getPlace()!=null){
 					doc.add(new StringField(StatusField.PLACE.name, status.getPlace(), Store.YES));
+					System.out.println("This place "+status.getPlace()+" indexed!");
 				}
 
 				String lang = status.getLang();

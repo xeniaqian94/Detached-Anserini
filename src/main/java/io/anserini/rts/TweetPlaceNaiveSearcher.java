@@ -163,8 +163,10 @@ class TweetPlaceNaiveSearcher {
 
 					d = searcher.doc(docId);
 					
-					if (d.get(TweetStreamReader.StatusField.PLACE.name)!=null)
+					if (d.get(TweetStreamReader.StatusField.PLACE.name)!=null){
 						System.out.print(d.get(TweetStreamReader.StatusField.PLACE.name)+" ");
+						System.out.print("Within this block but why");
+					}
 
 					
 					rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));
