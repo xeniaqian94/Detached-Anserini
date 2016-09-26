@@ -26,7 +26,9 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.DocIdSetIterator;
+import org.apache.lucene.search.FieldValueFilter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
@@ -147,12 +149,14 @@ class TweetPlaceNaiveSearcher {
 
 			TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
 
-			searcher.search(query, totalHitCollector);
+			searcher.search(finalQuery, totalHitCollector);
+			
+			
 
 			if (totalHitCollector.getTotalHits() > 0) {
 				TopScoreDocCollector collector = TopScoreDocCollector
 						.create(Math.max(0, totalHitCollector.getTotalHits()));
-				searcher.search(query, collector);
+				searcher.search(finalQuery, collector);
 				ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
 				System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
@@ -162,11 +166,6 @@ class TweetPlaceNaiveSearcher {
 					Document d;
 
 					d = searcher.doc(docId);
-					
-					if (d.get(TweetStreamReader.StatusField.PLACE.name)!=null){
-						System.out.print(d.get(TweetStreamReader.StatusField.PLACE.name)+" ");
-						System.out.print("Within this block but why");
-					}
 
 					
 					rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));

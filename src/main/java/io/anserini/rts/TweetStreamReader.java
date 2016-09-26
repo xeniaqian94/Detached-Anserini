@@ -29,10 +29,10 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.SimpleFSDirectory;
 
 import com.google.gson.JsonObject;
@@ -40,10 +40,7 @@ import com.google.gson.JsonParser;
 
 import io.anserini.document.twitter.Status;
 import io.anserini.index.twitter.TweetAnalyzer;
-//import io.anserini.nrts.TweetSearcher;
-import io.anserini.nrts.TweetStreamIndexer.StatusField;
 import io.anserini.util.LatLng;
-import twitter4j.FilterQuery;
 import twitter4j.RawStreamListener;
 import twitter4j.TwitterException;
 import twitter4j.TwitterStream;
@@ -135,6 +132,7 @@ public class TweetStreamReader {
 
 		index = new SimpleFSDirectory(Paths.get(cmdline.getOptionValue(INDEX_OPTION)));
 		IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
+		config.setOpenMode(OpenMode.CREATE_OR_APPEND);
 		indexWriter = new IndexWriter(index, config);
 
 		System.out.println("Initial docs in the index " + indexWriter.numDocs());
@@ -244,7 +242,6 @@ public class TweetStreamReader {
 				doc.add(new DoubleField(StatusField.LATITUDE.name, status.getlatitude(), Store.YES));
 				if(status.getPlace()!=null){
 					doc.add(new StringField(StatusField.PLACE.name, status.getPlace(), Store.YES));
-					System.out.println("This place "+status.getPlace()+" indexed!");
 				}
 
 				String lang = status.getLang();
@@ -269,7 +266,8 @@ public class TweetStreamReader {
 					jsonFout.newLine();
 					tweetCount++;
 					if (tweetCount % 2000 == 0) {
-						// Log.info(tweetCount + " statuses indexed");
+						if (tweetCount%10000==0)
+							LOG.info(tweetCount + " statuses indexed");
 						indexWriter.commit();
 
 					}
