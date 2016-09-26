@@ -194,12 +194,14 @@ public class IndexTweetsUpdatePlace {
 		Status status;
 		try {
 			while ((status = stream.next()) != null) {
+				
 				if (status.getPlace() != null) {
 
 					Query q = NumericRangeQuery.newLongRange(TweetStreamReader.StatusField.ID.name, status.getId(),
 							status.getId(), true, true);
 					System.out.print("Deleting docCount="+writer.numDocs());
 					writer.deleteDocuments(q);
+					writer.commit();
 					System.out.print(" Deleted docCount="+writer.numDocs());
 
 					Document doc = new Document();
@@ -240,15 +242,17 @@ public class IndexTweetsUpdatePlace {
 					}
 
 					writer.addDocument(doc);
-					System.out.println(" Updated docCount="+writer.numDocs());
+//					System.out.println(" Updated docCount="+writer.numDocs());
 					updateCount += 1;
+					
+					if (updateCount % 1000 == 0) {
+						LOG.info(updateCount + " statuses updated");
+						writer.commit();
+					}
 
 				}
 
-				if (updateCount % 1000 == 0) {
-					LOG.info(updateCount + " statuses updated");
-					writer.commit();
-				}
+				
 			}
 
 			LOG.info("Total elapsed time: " + (System.currentTimeMillis() - startTime) + "ms");
