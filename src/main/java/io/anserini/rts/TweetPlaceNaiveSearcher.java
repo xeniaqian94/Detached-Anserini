@@ -129,8 +129,6 @@ class TweetPlaceNaiveSearcher {
 					new Double(latitude[city] - 0.05), new Double(latitude[city] + 0.05), true, true);
 
 			Term t = new Term("place", cityName[city]);
-
-			// category が "/technology/computers/programming" から始まるドキュメントを検索
 			TermQuery query = new TermQuery(t);
 
 			System.out.println(query.toString());
@@ -168,6 +166,7 @@ class TweetPlaceNaiveSearcher {
 					if (d.get(TweetStreamReader.StatusField.PLACE.name)!=null)
 						System.out.print(d.get(TweetStreamReader.StatusField.PLACE.name)+" ");
 
+					
 					rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));
 					rawTextFout.newLine();
 					rawTextFout.flush();
@@ -221,6 +220,7 @@ class TweetPlaceNaiveSearcher {
 					goldFout.newLine();
 					goldFout.flush();
 				}
+				System.out.println();
 			}
 		}
 		for (String term : dict.keySet()) {
