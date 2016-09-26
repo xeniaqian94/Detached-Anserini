@@ -54,6 +54,7 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -61,6 +62,8 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.util.BytesRefBuilder;
+import org.apache.lucene.util.NumericUtils;
 import org.apache.tools.bzip2.CBZip2InputStream;
 
 /**
@@ -197,12 +200,15 @@ public class IndexTweetsUpdatePlace {
 				
 				if (status.getPlace() != null) {
 
-					Query q = NumericRangeQuery.newLongRange(TweetStreamReader.StatusField.ID.name, status.getId(),
-							status.getId(), true, true);
-					System.out.print("Deleting docCount="+writer.numDocs());
-					writer.deleteDocuments(q);
-					writer.commit();
-					System.out.print(" Deleted docCount="+writer.numDocs());
+					
+					
+				    
+//					Query q = NumericRangeQuery.newLongRange(TweetStreamReader.StatusField.ID.name, status.getId(),
+//							status.getId(), true, true);
+//					System.out.print("Deleting docCount="+writer.numDocs());
+//					writer.deleteDocuments(q);
+//					writer.commit();
+//					System.out.print(" Deleted docCount="+writer.numDocs());
 
 					Document doc = new Document();
 					doc.add(new LongField(StatusField.ID.name, status.getId(), Field.Store.YES));
@@ -241,11 +247,18 @@ public class IndexTweetsUpdatePlace {
 						}
 					}
 
-					writer.addDocument(doc);
-//					System.out.println(" Updated docCount="+writer.numDocs());
+					long id=status.getId();
+					BytesRefBuilder brb = new BytesRefBuilder();
+				    NumericUtils.longToPrefixCodedBytes(id, 0, brb);
+				    Term term = new Term(StatusField.ID.name, brb.get());
+				    writer.updateDocument(term,doc);
+				    
+//					writer.addDocument(doc);
+					
+					System.out.print(" Updated docCount="+writer.numDocs());
 					updateCount += 1;
 					
-					if (updateCount % 1000 == 0) {
+					if (updateCount % 10000 == 0) {
 						LOG.info(updateCount + " statuses updated");
 						writer.commit();
 					}
