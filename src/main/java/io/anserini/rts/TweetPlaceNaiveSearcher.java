@@ -170,11 +170,18 @@ class TweetPlaceNaiveSearcher {
 
 				System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
 
+				HashMap<String,Integer> hasHit=new HashMap<String,Integer>();
+				int dupcount=0;
 				for (int i = 0; i < hits.length; ++i) {
 					int docId = hits[i].doc;
 					Document d;
 
 					d = searcher.doc(docId);
+					if (hasHit.containsKey(d.get(TweetStreamReader.StatusField.ID.name))){
+						System.out.println("Hit once! bad");
+						dupcount+=1;
+					}
+					else hasHit.put(TweetStreamReader.StatusField.ID.name, 0);
 					// if (d.get((TweetStreamReader.StatusField.PLACE.name)) !=
 					// null)
 					// System.out.print(" " +
@@ -234,6 +241,7 @@ class TweetPlaceNaiveSearcher {
 					goldFout.newLine();
 					goldFout.flush();
 				}
+				System.out.println("City " + cityName[city] + " " + (collector.getTotalHits()-dupcount) + " hits.");
 				System.out.println();
 			}
 		}
