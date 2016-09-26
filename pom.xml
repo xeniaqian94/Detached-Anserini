@@ -119,6 +119,10 @@
 							<name>TweetNaiveSearcher</name>
 						</program>
 						<program>
+							<mainClass>io.anserini.rts.TweetPlaceNaiveSearcher</mainClass>
+							<name>TweetPlaceNaiveSearcher</name>
+						</program>
+						<program>
 							<mainClass>io.anserini.rts.testCondor</mainClass>
 							<name>testCondor</name>
 						</program>

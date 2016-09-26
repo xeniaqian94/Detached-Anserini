@@ -74,7 +74,7 @@ public class IndexTweets {
 				"in_reply_to_status_id"), IN_REPLY_TO_USER_ID("in_reply_to_user_id"), FOLLOWERS_COUNT(
 						"followers_count"), FRIENDS_COUNT("friends_count"), STATUSES_COUNT(
 								"statuses_count"), RETWEETED_STATUS_ID("retweeted_status_id"), RETWEETED_USER_ID(
-										"retweeted_user_id"), RETWEET_COUNT("retweet_count"),LATITUDE("latitude"), LONGITUDE("longitude");
+										"retweeted_user_id"), RETWEET_COUNT("retweet_count"),LATITUDE("latitude"), LONGITUDE("longitude"),PLACE("place");
 
 		public final String name;
 
@@ -252,6 +252,8 @@ public class IndexTweets {
 				doc.add(new DoubleField(StatusField.LONGITUDE.name, status.getLongitude(), Store.YES));
 				doc.add(new DoubleField(StatusField.LATITUDE.name, status.getlatitude(), Store.YES));
 
+				if(status.getPlace()!=null)
+					doc.add(new TextField(StatusField.PLACE.name, status.getPlace(), Store.YES));
 				long inReplyToStatusId = status.getInReplyToStatusId();
 				if (inReplyToStatusId > 0) {
 					doc.add(new LongField(StatusField.IN_REPLY_TO_STATUS_ID.name, inReplyToStatusId, Field.Store.YES));

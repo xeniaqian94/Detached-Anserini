@@ -23,6 +23,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexOptions;
@@ -42,6 +43,7 @@ import io.anserini.index.twitter.TweetAnalyzer;
 //import io.anserini.nrts.TweetSearcher;
 import io.anserini.nrts.TweetStreamIndexer.StatusField;
 import io.anserini.util.LatLng;
+import twitter4j.FilterQuery;
 import twitter4j.RawStreamListener;
 import twitter4j.TwitterException;
 import twitter4j.TwitterStream;
@@ -67,8 +69,8 @@ public class TweetStreamReader {
 				"in_reply_to_status_id"), IN_REPLY_TO_USER_ID("in_reply_to_user_id"), FOLLOWERS_COUNT(
 						"followers_count"), FRIENDS_COUNT("friends_count"), STATUSES_COUNT(
 								"statuses_count"), RETWEETED_STATUS_ID("retweeted_status_id"), RETWEETED_USER_ID(
-										"retweeted_user_id"), RETWEET_COUNT(
-												"retweet_count"), LATITUDE("latitude"), LONGITUDE("longitude");
+										"retweeted_user_id"), RETWEET_COUNT("retweet_count"), LATITUDE(
+												"latitude"), LONGITUDE("longitude"), PLACE("place");
 
 		public final String name;
 
@@ -138,6 +140,7 @@ public class TweetStreamReader {
 		System.out.println("Initial docs in the index " + indexWriter.numDocs());
 
 		final TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
+
 		File dir = new File(cmdline.getOptionValue(RAW_OPTION));
 		dir.mkdir();
 		final BufferedWriter jsonFout = new BufferedWriter(new FileWriter(cmdline.getOptionValue(RAW_OPTION) + "/"
@@ -199,8 +202,12 @@ public class TweetStreamReader {
 				if (status.getText() == null) {
 					return;
 				}
-				if (status.getLongitude() != Double.NEGATIVE_INFINITY
-						&& status.getlatitude() != Double.NEGATIVE_INFINITY) {
+				if (status.getPlace() != null) {
+					System.out.println("		" + status.getPlace() + " " + status.getText());
+
+				}
+				if ((status.getLongitude() != Double.NEGATIVE_INFINITY
+						&& status.getlatitude() != Double.NEGATIVE_INFINITY)) {
 					System.out.println(
 							"		" + status.getLongitude() + " " + status.getlatitude() + " " + status.getText());
 					geoTaggedTweetCount += 1;
@@ -238,6 +245,9 @@ public class TweetStreamReader {
 
 				doc.add(new DoubleField(StatusField.LONGITUDE.name, status.getLongitude(), Store.YES));
 				doc.add(new DoubleField(StatusField.LATITUDE.name, status.getlatitude(), Store.YES));
+				if(status.getPlace()!=null){
+					doc.add(new StringField(StatusField.PLACE.name, status.getPlace(), Store.YES));
+				}
 
 				String lang = status.getLang();
 				if (!lang.equals("unknown")) {
