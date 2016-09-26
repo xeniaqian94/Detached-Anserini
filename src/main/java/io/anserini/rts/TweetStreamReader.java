@@ -202,10 +202,7 @@ public class TweetStreamReader {
 				if (status.getText() == null) {
 					return;
 				}
-				if (status.getPlace() != null) {
-					System.out.println("		" + status.getPlace() + " " + status.getText());
-
-				}
+				
 				if ((status.getLongitude() != Double.NEGATIVE_INFINITY
 						&& status.getlatitude() != Double.NEGATIVE_INFINITY)) {
 					System.out.println(
