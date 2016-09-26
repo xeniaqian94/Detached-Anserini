@@ -166,7 +166,8 @@ class TweetPlaceNaiveSearcher {
 					Document d;
 
 					d = searcher.doc(docId);
-//					System.out.println(d.get((TweetStreamReader.StatusField.ID.name)));
+					if (d.get((TweetStreamReader.StatusField.PLACE.name))!=null)
+						System.out.print(" "+d.get((TweetStreamReader.StatusField.PLACE.name)));
 
 					
 					rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));
