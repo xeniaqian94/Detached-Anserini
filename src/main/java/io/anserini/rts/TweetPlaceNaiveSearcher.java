@@ -117,6 +117,7 @@ class TweetPlaceNaiveSearcher {
 		BufferedWriter dictFout = new BufferedWriter(new FileWriter("clusteringDataset/dict"));
 		BufferedWriter rawTextFout = new BufferedWriter(new FileWriter("clusteringDataset/rawText"));
 		BufferedWriter dfFout = new BufferedWriter(new FileWriter("clusteringDataset/df"));
+		BufferedWriter userIDFout = new BufferedWriter(new FileWriter("clusteringDataset/userID"));
 		Map<String, Integer> dict = new HashMap<String, Integer>(); // term
 																	// termID
 		Map<Integer, Integer> df = new HashMap<Integer, Integer>();
@@ -170,18 +171,18 @@ class TweetPlaceNaiveSearcher {
 
 				System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
 
-				HashMap<String,Integer> hasHit=new HashMap<String,Integer>();
-				int dupcount=0;
+				HashMap<String, Integer> hasHit = new HashMap<String, Integer>();
+				int dupcount = 0;
 				for (int i = 0; i < hits.length; ++i) {
 					int docId = hits[i].doc;
 					Document d;
 
 					d = searcher.doc(docId);
-					if (hasHit.containsKey(d.get(TweetStreamReader.StatusField.ID.name))){
+					if (hasHit.containsKey(d.get(TweetStreamReader.StatusField.ID.name))) {
 						System.out.println("Hit once! bad");
-						dupcount+=1;
-					}
-					else hasHit.put(TweetStreamReader.StatusField.ID.name, 0);
+						dupcount += 1;
+					} else
+						hasHit.put(TweetStreamReader.StatusField.ID.name, 0);
 					// if (d.get((TweetStreamReader.StatusField.PLACE.name)) !=
 					// null)
 					// System.out.print(" " +
@@ -240,8 +241,10 @@ class TweetPlaceNaiveSearcher {
 					goldFout.write(cityName[city]);
 					goldFout.newLine();
 					goldFout.flush();
+					userIDFout.write(d.get("screen_name"));
+					userIDFout.newLine();
 				}
-				System.out.println("City " + cityName[city] + " " + (collector.getTotalHits()-dupcount) + " hits.");
+				System.out.println("City " + cityName[city] + " " + (collector.getTotalHits() - dupcount) + " hits.");
 				System.out.println();
 			}
 		}
@@ -258,6 +261,7 @@ class TweetPlaceNaiveSearcher {
 		docVectorsFout.close();
 		dictFout.close();
 		rawTextFout.close();
+		userIDFout.close();
 		dfFout.close();
 		reader.close();
 
