@@ -54,10 +54,27 @@
 							<mainClass>io.anserini.index.IndexTweets</mainClass>
 							<name>IndexTweets</name>
 						</program>
+
+						<program>
+							<mainClass>io.anserini.index.IndexTweetsDefaultStatusClass</mainClass>
+							<name>IndexTweetsDefaultStatusClass</name>
+						</program>
+						
+						<program>
+							<mainClass>io.anserini.index.IndexTweetsDefaultStatusClassNoLinkTitle</mainClass>
+							<name>IndexTweetsDefaultStatusClassNoLinkTitle</name>
+						</program>
 						<program>
 							<mainClass>io.anserini.index.IndexTweetsUpdatePlace</mainClass>
 							<name>IndexTweetsUpdatePlace</name>
 						</program>
+						<program>
+							<mainClass>io.anserini.index.UserPostFrequencyDistribution</mainClass>
+							<name>UserPostFrequencyDistribution</name>
+						</program>
+						
+						
+						
 						<program>
 							<mainClass>io.anserini.search.SearchTweets</mainClass>
 							<name>SearchTweets</name>
@@ -122,6 +139,13 @@
 							<mainClass>io.anserini.rts.TweetNaiveSearcher</mainClass>
 							<name>TweetNaiveSearcher</name>
 						</program>
+
+
+						<program>
+							<mainClass>io.anserini.rts.TweetPoliceNaiveSearcher</mainClass>
+							<name>TweetPoliceNaiveSearcher</name>
+						</program>
+
 						<program>
 							<mainClass>io.anserini.rts.TweetPlaceNaiveSearcher</mainClass>
 							<name>TweetPlaceNaiveSearcher</name>

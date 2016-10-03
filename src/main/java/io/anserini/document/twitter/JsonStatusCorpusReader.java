@@ -54,9 +54,32 @@ public class JsonStatusCorpusReader implements StatusStream {
 			public boolean accept(File path) {
 				// System.out.println("Currently checking corpus block .gz
 				// "+path.toString()+" "+path.toString().contains("2015-12-"));
-				return (path.getName().endsWith(".gz") && (path.toString().contains("2015-08")
-						|| path.toString().contains("2015-09") || path.toString().contains("2015-10")
-						|| path.toString().contains("2015-11") || path.toString().contains("2015-12"))) ? true : false;
+				return (path.getName().endsWith(".gz")) ? true : false;
+			}
+		});
+		System.out.println("Check recursion: files listed # " + files.length);
+
+		if (files.length == 0) {
+			throw new IOException(file + " does not contain any .gz files!");
+		}
+	}
+
+	public JsonStatusCorpusReader(File file, final String optionValue) throws IOException {
+		// TODO Auto-generated constructor stub
+
+		Preconditions.checkNotNull(file);
+
+		if (!file.isDirectory()) {
+			throw new IOException("Expecting " + file + " to be a directory!");
+		}
+
+		files = file.listFiles(new FileFilter() {
+			public boolean accept(File path) {
+				if (optionValue.length() > 0)
+					for (String file:optionValue.split(";"))
+						if (!path.toString().contains(file))
+							return false;
+				return (path.getName().endsWith(".gz")) ? true : false;
 			}
 		});
 		System.out.println("Check recursion: files listed # " + files.length);
@@ -81,6 +104,33 @@ public class JsonStatusCorpusReader implements StatusStream {
 			status = currentBlock.next();
 			if (status != null) {
 				return status;
+			}
+
+			if (nextFile >= files.length) {
+				// We're out of files to read. Must be the end of the corpus.
+				return null;
+			}
+
+			currentBlock.close();
+			// Move to next file.
+			currentBlock = new JsonStatusBlockReader(files[nextFile]);
+			LOG.info("Switched to file " + files[nextFile].getName());
+			nextFile++;
+		}
+	}
+
+	public String nextRaw() throws IOException {
+		if (currentBlock == null) {
+			currentBlock = new JsonStatusBlockReader(files[nextFile]);
+			LOG.info("Switched to file " + files[nextFile].getName());
+			nextFile++;
+		}
+
+		String statusRaw = null;
+		while (true) {
+			statusRaw = currentBlock.nextRaw();
+			if (statusRaw != null) {
+				return statusRaw;
 			}
 
 			if (nextFile >= files.length) {
