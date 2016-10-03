@@ -19,9 +19,6 @@ package io.anserini.index;
 import io.anserini.document.twitter.JsonStatusCorpusReader;
 import io.anserini.document.twitter.StatusStream;
 import io.anserini.index.twitter.TweetAnalyzer;
-import io.anserini.rts.TitleExtractor;
-import io.anserini.rts.TweetStreamReader;
-import io.anserini.rts.TweetStreamReader.StatusField;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import twitter4j.Status;
 import twitter4j.json.DataObjectFactory;
@@ -114,7 +111,6 @@ public class UserPostFrequencyDistribution {
 
 	private static final String HELP_OPTION = "h";
 	private static final String COLLECTION_OPTION = "collection";
-	private static final String INDEX_OPTION = "index";
 
 	private static final String STORE_TERM_VECTORS_OPTION = "store";
 
@@ -128,8 +124,6 @@ public class UserPostFrequencyDistribution {
 
 		options.addOption(OptionBuilder.withArgName("collection").hasArg()
 				.withDescription("source collection directory").create(COLLECTION_OPTION));
-		options.addOption(
-				OptionBuilder.withArgName("dir").hasArg().withDescription("index location").create(INDEX_OPTION));
 
 		CommandLine cmdline = null;
 		CommandLineParser parser = new GnuParser();
@@ -140,18 +134,14 @@ public class UserPostFrequencyDistribution {
 			System.exit(-1);
 		}
 
-		if (cmdline.hasOption(HELP_OPTION) || !cmdline.hasOption(COLLECTION_OPTION)
-				|| !cmdline.hasOption(INDEX_OPTION)) {
+		if (cmdline.hasOption(HELP_OPTION) || !cmdline.hasOption(COLLECTION_OPTION)) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp(UserPostFrequencyDistribution.class.getName(), options);
 			System.exit(-1);
 		}
 
 		String collectionPath = cmdline.getOptionValue(COLLECTION_OPTION);
-		String indexPath = cmdline.getOptionValue(INDEX_OPTION);
-
-		System.out.println(collectionPath + " " + indexPath);
-
+		
 		final FieldType textOptions = new FieldType();
 		textOptions.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
 		textOptions.setStored(true);
@@ -159,8 +149,7 @@ public class UserPostFrequencyDistribution {
 		textOptions.setStoreTermVectors(true);
 
 		LOG.info("collection: " + collectionPath);
-		LOG.info("index: " + indexPath);
-
+		
 		LongOpenHashSet deletes = null;
 
 		long startTime = System.currentTimeMillis();
@@ -170,19 +159,15 @@ public class UserPostFrequencyDistribution {
 			System.exit(-1);
 		}
 
-		final StatusStream stream = new JsonStatusCorpusReader(file,cmdline.getOptionValue("collection_pattern"));
+		final StatusStream stream = new JsonStatusCorpusReader(file, cmdline.getOptionValue("collection_pattern"));
 
-		final Directory dir = new SimpleFSDirectory(Paths.get(cmdline.getOptionValue(INDEX_OPTION)));
-		final IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
-
-		config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 
 				try {
 
-					dir.close();
+				
 					stream.close();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -193,7 +178,7 @@ public class UserPostFrequencyDistribution {
 				System.out.println("# of users indexed this round: " + userIndexedCount);
 
 				try {
-					dir.close();
+					
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
