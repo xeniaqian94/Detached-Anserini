@@ -124,6 +124,8 @@ public class UserPostFrequencyDistribution {
 
 		options.addOption(OptionBuilder.withArgName("collection").hasArg()
 				.withDescription("source collection directory").create(COLLECTION_OPTION));
+		options.addOption(new Option("property", "property file path"));
+		options.addOption(new Option("collection_pattern","pattern matching"));
 
 		CommandLine cmdline = null;
 		CommandLineParser parser = new GnuParser();
@@ -159,7 +161,7 @@ public class UserPostFrequencyDistribution {
 			System.exit(-1);
 		}
 
-		final StatusStream stream = new JsonStatusCorpusReader(file, cmdline.getOptionValue("collection_pattern"));
+		final JsonStatusCorpusReader stream = new JsonStatusCorpusReader(file, cmdline.getOptionValue("collection_pattern"));
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
