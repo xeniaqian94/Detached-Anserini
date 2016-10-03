@@ -26,43 +26,51 @@ import java.util.zip.GZIPInputStream;
 import com.google.common.base.Preconditions;
 
 /**
- * Abstraction for an stream of statuses, backed by an underlying gzipped file with JSON-encoded
- * tweets, one per line.
+ * Abstraction for an stream of statuses, backed by an underlying gzipped file
+ * with JSON-encoded tweets, one per line.
  */
 public class JsonStatusBlockReader implements StatusStream {
-  private final BufferedReader br;
+	private final BufferedReader br;
 
-  public JsonStatusBlockReader(File file) throws IOException {
-    Preconditions.checkNotNull(file);
+	public JsonStatusBlockReader(File file) throws IOException {
+		Preconditions.checkNotNull(file);
 
-    if (!file.getName().endsWith(".gz")) {
-      throw new IOException("Expecting .gz compressed file!");
-    }
+		if (!file.getName().endsWith(".gz")) {
+			throw new IOException("Expecting .gz compressed file!");
+		}
 
-    br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file)), "UTF-8"));
-  }
+		br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file)), "UTF-8"));
+	}
 
-  /**
-   * Returns the next status, or <code>null</code> if no more statuses.
-   */
-  public Status next() throws IOException {
-    Status nxt = null;
-    String raw = null;
+	/**
+	 * Returns the next status, or <code>null</code> if no more statuses.
+	 */
+	public Status next() throws IOException {
+		Status nxt = null;
+		String raw = null;
 
-    while (nxt == null) {
-      raw = br.readLine();
+		while (nxt == null) {
+			raw = br.readLine();
 
-      // Check to see if we've reached end of file.
-      if (raw == null) {
-        return null;
-      }
+			// Check to see if we've reached end of file.
+			if (raw == null) {
+				return null;
+			}
 
-      nxt = Status.fromJson(raw);
-    }
-    return Status.fromJson(raw);
-  }
+			nxt = Status.fromJson(raw);
+		}
+		return Status.fromJson(raw);
+	}
 
-  public void close() throws IOException {
-    br.close();
-  }
+	public String nextRaw() throws IOException {
+		Status nxt = null;
+		String raw = null;
+		raw = br.readLine();
+		return raw;
+
+	}
+
+	public void close() throws IOException {
+		br.close();
+	}
 }
