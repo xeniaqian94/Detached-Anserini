@@ -141,7 +141,7 @@ public class UserPostFrequencyDistribution {
 		}
 
 		String collectionPath = cmdline.getOptionValue(COLLECTION_OPTION);
-		
+
 		final FieldType textOptions = new FieldType();
 		textOptions.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
 		textOptions.setStored(true);
@@ -149,7 +149,7 @@ public class UserPostFrequencyDistribution {
 		textOptions.setStoreTermVectors(true);
 
 		LOG.info("collection: " + collectionPath);
-		
+
 		LongOpenHashSet deletes = null;
 
 		long startTime = System.currentTimeMillis();
@@ -161,13 +161,11 @@ public class UserPostFrequencyDistribution {
 
 		final StatusStream stream = new JsonStatusCorpusReader(file, cmdline.getOptionValue("collection_pattern"));
 
-
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 
 				try {
 
-				
 					stream.close();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -177,12 +175,7 @@ public class UserPostFrequencyDistribution {
 
 				System.out.println("# of users indexed this round: " + userIndexedCount);
 
-				try {
-					
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				
 				System.out.println("Shutting down");
 
 			}
@@ -266,7 +259,6 @@ public class UserPostFrequencyDistribution {
 			e.printStackTrace();
 		} finally {
 
-			dir.close();
 			stream.close();
 		}
 	}
