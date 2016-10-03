@@ -191,7 +191,6 @@ public class UserPostFrequencyDistribution {
 
 		try {
 			Properties prop = new Properties();
-			OutputStream output = new FileOutputStream(cmdline.getOptionValue("property"));
 			while ((status = stream.next()) != null) {
 
 				
@@ -251,10 +250,13 @@ public class UserPostFrequencyDistribution {
 						System.out.println("Property size " + prop.size() + "Memory used:  "
 								+ ((runtime.totalMemory() - runtime.freeMemory()) / (1024L * 1024L)) + " MB\n");
 					}
+					OutputStream output = new FileOutputStream(cmdline.getOptionValue("property"),false);
+					prop.store(output, null);
+					output.close();
 
 				}
 			}
-			prop.store(output, null);
+//			prop.store(output, null);
 			LOG.info(String.format("Total of %s statuses added", userIndexedCount));
 			LOG.info("Total elapsed time: " + (System.currentTimeMillis() - startTime) + "ms");
 		} catch (Exception e) {
