@@ -194,12 +194,7 @@ public class UserPostFrequencyDistribution {
 			OutputStream output = new FileOutputStream(cmdline.getOptionValue("property"));
 			while ((status = stream.next()) != null) {
 
-				if (prop.size() % 1000 == 0) {
-					Runtime runtime = Runtime.getRuntime();
-					runtime.gc();
-					System.out.println("Property size " + prop.size() + "Memory used:  "
-							+ ((runtime.totalMemory() - runtime.freeMemory()) / (1024L * 1024L)) + " MB\n");
-				}
+				
 
 				// try{
 				// status = DataObjectFactory.createStatus(s);
@@ -250,6 +245,12 @@ public class UserPostFrequencyDistribution {
 
 					prop.setProperty(String.valueOf(status.getUserid()),
 							String.valueOf(status.getStatusesCount()) + " " + (1 + previousPostCount));
+					if (prop.size()>0&&prop.size() % 1000 == 0) {
+						Runtime runtime = Runtime.getRuntime();
+						runtime.gc();
+						System.out.println("Property size " + prop.size() + "Memory used:  "
+								+ ((runtime.totalMemory() - runtime.freeMemory()) / (1024L * 1024L)) + " MB\n");
+					}
 
 				}
 			}
