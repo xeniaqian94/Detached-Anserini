@@ -75,11 +75,12 @@ public class JsonStatusCorpusReader implements StatusStream {
 
 		files = file.listFiles(new FileFilter() {
 			public boolean accept(File path) {
+				boolean contains=false;
 				if (optionValue.length() > 0)
-					for (String file:optionValue.split(";"))
-						if (!path.toString().contains(file))
-							return false;
-				return (path.getName().endsWith(".gz")) ? true : false;
+					for (String file:optionValue.split(":"))
+						if (path.toString().contains(file))
+							contains=true;
+				return (path.getName().endsWith(".gz")&&contains) ? true : false;
 			}
 		});
 		System.out.println("Check recursion: files listed # " + files.length);
@@ -119,6 +120,7 @@ public class JsonStatusCorpusReader implements StatusStream {
 		}
 	}
 
+	
 	public String nextRaw() throws IOException {
 		if (currentBlock == null) {
 			currentBlock = new JsonStatusBlockReader(files[nextFile]);
