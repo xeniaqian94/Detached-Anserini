@@ -57,6 +57,9 @@ public class Status {
 	private long retweetUserId;
 	private int retweetCount;
 	private String place;
+	private String userLocation;
+
+	private String userid;
 
 	protected Status() {
 	}
@@ -95,6 +98,9 @@ public class Status {
 
 	public String getLang() {
 		return lang;
+	}
+	public String getUserid(){
+		return userid;
 	}
 
 	public int getFollowersCount() {
@@ -136,6 +142,10 @@ public class Status {
 	public int getRetweetCount() {
 		return retweetCount;
 	}
+	
+	public String getUserLocation(){
+		return userLocation;
+	}
 
 	public static Status fromJson(String json) {
 		JsonObject obj = null;
@@ -155,6 +165,7 @@ public class Status {
 		status.text = obj.get("text").getAsString();
 		status.id = obj.get("id").getAsLong();
 		status.screenname = obj.get("user").getAsJsonObject().get("screen_name").getAsString();
+		status.userid=obj.get("user").getAsJsonObject().get("id_str").getAsString();
 		status.createdAt = obj.get("created_at").getAsString();
 
 		try {
@@ -222,6 +233,12 @@ public class Status {
 		status.followersCount = obj.get("user").getAsJsonObject().get("followers_count").getAsInt();
 		status.friendsCount = obj.get("user").getAsJsonObject().get("friends_count").getAsInt();
 		status.statusesCount = obj.get("user").getAsJsonObject().get("statuses_count").getAsInt();
+		
+		try{
+			status.userLocation=obj.get("user").getAsJsonObject().get("location").getAsString();
+		}catch (Exception e) {
+			status.userLocation = "";
+		}
 
 		status.jsonObject = obj;
 		status.jsonString = json;

@@ -17,10 +17,11 @@
 package io.anserini.index;
 
 import io.anserini.document.twitter.JsonStatusCorpusReader;
+import io.anserini.document.twitter.Status;
 import io.anserini.document.twitter.StatusStream;
 import io.anserini.index.twitter.TweetAnalyzer;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import twitter4j.Status;
+//import twitter4j.Status;
 import twitter4j.json.DataObjectFactory;
 
 import java.io.BufferedReader;
@@ -124,8 +125,8 @@ public class UserPostFrequencyDistribution {
 
 		options.addOption(OptionBuilder.withArgName("collection").hasArg()
 				.withDescription("source collection directory").create(COLLECTION_OPTION));
-		options.addOption(OptionBuilder.withArgName("property").hasArg()
-				.withDescription("source collection directory").create("property"));
+		options.addOption(OptionBuilder.withArgName("property").hasArg().withDescription("source collection directory")
+				.create("property"));
 		options.addOption(OptionBuilder.withArgName("collection_pattern").hasArg()
 				.withDescription("source collection directory").create("collection_pattern"));
 
@@ -186,13 +187,12 @@ public class UserPostFrequencyDistribution {
 			}
 		});
 		Status status;
-		String s;
 		boolean readerNotInitialized = true;
 
 		try {
 			Properties prop = new Properties();
 			OutputStream output = new FileOutputStream(cmdline.getOptionValue("property"));
-			while ((s = stream.nextRaw()) != null) {
+			while ((status = stream.next()) != null) {
 
 				if (prop.size() % 1000 == 0) {
 					Runtime runtime = Runtime.getRuntime();
@@ -201,41 +201,32 @@ public class UserPostFrequencyDistribution {
 							+ ((runtime.totalMemory() - runtime.freeMemory()) / (1024L * 1024L)) + " MB\n");
 				}
 
-				try{
-				status = DataObjectFactory.createStatus(s);
-				if (status==null||status.getText() == null) {
-					continue;
-				}}catch(Exception e){
-					
-				}
-				status=DataObjectFactory.createStatus(s);
+				// try{
+				// status = DataObjectFactory.createStatus(s);
+				// if (status==null||status.getText() == null) {
+				// continue;
+				// }}catch(Exception e){
+				//
+				// }
+				//
 
 				boolean pittsburghRelated = false;
 				try {
 
-					if (Math.abs(status.getGeoLocation().getLongitude() - pittsburghLongitude) < 0.05d
-							&& Math.abs(status.getGeoLocation().getLatitude() - pittsburghLatitude) < 0.05d)
+					if (Math.abs(status.getLongitude() - pittsburghLongitude) < 0.05d
+							&& Math.abs(status.getlatitude() - pittsburghLatitude) < 0.05d)
 						pittsburghRelated = true;
 				} catch (Exception e) {
 
 				}
 				try {
-					if (status.getPlace().getFullName().contains("Pittsburgh, PA"))
+					if (status.getPlace().contains("Pittsburgh, PA"))
 						pittsburghRelated = true;
 				} catch (Exception e) {
 
 				}
 				try {
-					if (Math.abs(status.getPlace().getBoundingBoxCoordinates()[0][0].getLongitude()
-							- pittsburghLongitude) < 0.05d
-							&& Math.abs(status.getPlace().getBoundingBoxCoordinates()[0][0].getLatitude()
-									- pittsburghLatitude) < 0.05d)
-						pittsburghRelated = true;
-				} catch (Exception e) {
-
-				}
-				try {
-					if (status.getUser().getLocation().contains("Pittsburgh, PA"))
+					if (status.getUserLocation().contains("Pittsburgh, PA"))
 						pittsburghRelated = true;
 				} catch (Exception e) {
 
@@ -247,20 +238,18 @@ public class UserPostFrequencyDistribution {
 				} catch (Exception e) {
 
 				}
-				System.out.println("Create object succeeded");
 
 				if (pittsburghRelated) {
-					System.out.println("Found "+String.valueOf(status.getUser().getId())+" as Pittsburgh related");
-
+					
 					int previousPostCount = 0;
 
-					if (prop.containsKey(String.valueOf(status.getUser().getId()))) {
+					if (prop.containsKey(String.valueOf(status.getUserid()))) {
 						previousPostCount = Integer
-								.valueOf(prop.getProperty(String.valueOf(status.getUser().getId())).split(" ")[1]);
+								.valueOf(prop.getProperty(String.valueOf(status.getUserid())).split(" ")[1]);
 					}
 
-					prop.setProperty(String.valueOf(status.getUser().getId()),
-							String.valueOf(status.getUser().getStatusesCount()) + " " + (1 + previousPostCount));
+					prop.setProperty(String.valueOf(status.getUserid()),
+							String.valueOf(status.getStatusesCount()) + " " + (1 + previousPostCount));
 
 				}
 			}
