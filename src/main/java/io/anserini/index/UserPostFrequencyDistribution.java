@@ -161,7 +161,9 @@ public class UserPostFrequencyDistribution {
 			System.exit(-1);
 		}
 
-		final JsonStatusCorpusReader stream = new JsonStatusCorpusReader(file, cmdline.getOptionValue("collection_pattern"));
+		System.out.println(cmdline.getOptionValue("collection_pattern"));
+		final JsonStatusCorpusReader stream = new JsonStatusCorpusReader(file,
+				cmdline.getOptionValue("collection_pattern"));
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
