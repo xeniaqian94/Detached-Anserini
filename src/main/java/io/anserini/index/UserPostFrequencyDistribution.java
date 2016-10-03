@@ -247,6 +247,8 @@ public class UserPostFrequencyDistribution {
 				} catch (Exception e) {
 
 				}
+				System.out.println("Create object succeeded");
+
 				if (pittsburghRelated) {
 					System.out.println("Found "+String.valueOf(status.getUser().getId())+" as Pittsburgh related");
 
