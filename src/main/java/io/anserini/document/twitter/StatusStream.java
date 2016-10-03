@@ -23,5 +23,6 @@ import java.io.IOException;
  */
 public interface StatusStream {
   public Status next() throws IOException;
+  public String nextRaw() throws IOException;
   public void close() throws IOException;
 }
