@@ -124,8 +124,10 @@ public class UserPostFrequencyDistribution {
 
 		options.addOption(OptionBuilder.withArgName("collection").hasArg()
 				.withDescription("source collection directory").create(COLLECTION_OPTION));
-		options.addOption(new Option("property", "property file path"));
-		options.addOption(new Option("collection_pattern","pattern matching"));
+		options.addOption(OptionBuilder.withArgName("property").hasArg()
+				.withDescription("source collection directory").create("property"));
+		options.addOption(OptionBuilder.withArgName("collection_pattern").hasArg()
+				.withDescription("source collection directory").create("collection_pattern"));
 
 		CommandLine cmdline = null;
 		CommandLineParser parser = new GnuParser();
@@ -151,7 +153,8 @@ public class UserPostFrequencyDistribution {
 		textOptions.setStoreTermVectors(true);
 
 		LOG.info("collection: " + collectionPath);
-
+		LOG.info("collection_pattern " + cmdline.getOptionValue("collection_pattern"));
+		LOG.info("property " + cmdline.getOptionValue("property"));
 		LongOpenHashSet deletes = null;
 
 		long startTime = System.currentTimeMillis();
@@ -161,7 +164,6 @@ public class UserPostFrequencyDistribution {
 			System.exit(-1);
 		}
 
-		System.out.println(cmdline.getOptionValue("collection_pattern"));
 		final JsonStatusCorpusReader stream = new JsonStatusCorpusReader(file,
 				cmdline.getOptionValue("collection_pattern"));
 
@@ -179,7 +181,6 @@ public class UserPostFrequencyDistribution {
 
 				System.out.println("# of users indexed this round: " + userIndexedCount);
 
-				
 				System.out.println("Shutting down");
 
 			}
