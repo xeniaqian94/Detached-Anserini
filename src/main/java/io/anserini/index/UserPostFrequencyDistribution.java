@@ -201,10 +201,14 @@ public class UserPostFrequencyDistribution {
 							+ ((runtime.totalMemory() - runtime.freeMemory()) / (1024L * 1024L)) + " MB\n");
 				}
 
+				try{
 				status = DataObjectFactory.createStatus(s);
-				if (status.getText() == null) {
+				if (status==null||status.getText() == null) {
 					continue;
+				}}catch(Exception e){
+					
 				}
+				status=DataObjectFactory.createStatus(s);
 
 				boolean pittsburghRelated = false;
 				try {
@@ -244,6 +248,7 @@ public class UserPostFrequencyDistribution {
 
 				}
 				if (pittsburghRelated) {
+					System.out.println("Found "+String.valueOf(status.getUser().getId())+" as Pittsburgh related");
 
 					int previousPostCount = 0;
 
