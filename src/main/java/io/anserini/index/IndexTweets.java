@@ -29,6 +29,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -71,11 +73,14 @@ public class IndexTweets {
 	}
 
 	public static enum StatusField {
-		ID("id"), SCREEN_NAME("screen_name"), EPOCH("epoch"), TEXT("text"), LANG("lang"), IN_REPLY_TO_STATUS_ID(
-				"in_reply_to_status_id"), IN_REPLY_TO_USER_ID("in_reply_to_user_id"), FOLLOWERS_COUNT(
-						"followers_count"), FRIENDS_COUNT("friends_count"), STATUSES_COUNT(
-								"statuses_count"), RETWEETED_STATUS_ID("retweeted_status_id"), RETWEETED_USER_ID(
-										"retweeted_user_id"), RETWEET_COUNT("retweet_count"),LATITUDE("latitude"), LONGITUDE("longitude"),PLACE("place");
+		ID("id"), SCREEN_NAME("screen_name"), USER_ID("user_id"), EPOCH("epoch"), TEXT("text"), LANG(
+				"lang"), IN_REPLY_TO_STATUS_ID("in_reply_to_status_id"), IN_REPLY_TO_USER_ID(
+						"in_reply_to_user_id"), FOLLOWERS_COUNT("followers_count"), FRIENDS_COUNT(
+								"friends_count"), STATUSES_COUNT("statuses_count"), RETWEETED_STATUS_ID(
+										"retweeted_status_id"), RETWEETED_USER_ID("retweeted_user_id"), RETWEET_COUNT(
+												"retweet_count"), LATITUDE("latitude"), LONGITUDE("longitude"), PLACE(
+														"place"), USER_LOCATION("user_location"), USER_DESCRIPTION(
+																"user_description"), USER_URL("user_url");
 
 		public final String name;
 
@@ -107,7 +112,8 @@ public class IndexTweets {
 		options.addOption(OptionBuilder.withArgName("file").hasArg().withDescription("file with deleted tweetids")
 				.create(DELETES_OPTION));
 		options.addOption(OptionBuilder.withArgName("id").hasArg().withDescription("max id").create(MAX_ID_OPTION));
-
+		options.addOption(OptionBuilder.withArgName("collection_pattern").hasArg()
+				.withDescription("source collection directory").create("collection_pattern"));
 		CommandLine cmdline = null;
 		CommandLineParser parser = new GnuParser();
 		try {
@@ -135,12 +141,12 @@ public class IndexTweets {
 		textOptions.setTokenized(true);
 		if (cmdline.hasOption(STORE_TERM_VECTORS_OPTION)) {
 			textOptions.setStoreTermVectors(true);
-		
+
 		}
 
 		LOG.info("collection: " + collectionPath);
 		LOG.info("index: " + indexPath);
-
+		LOG.info("collection_pattern " + cmdline.getOptionValue("collection_pattern"));
 		LongOpenHashSet deletes = null;
 		if (cmdline.hasOption(DELETES_OPTION)) {
 			deletes = new LongOpenHashSet();
@@ -182,17 +188,15 @@ public class IndexTweets {
 			System.exit(-1);
 		}
 
-		
-		final StatusStream stream = new JsonStatusCorpusReader(file);
+		final StatusStream stream = new JsonStatusCorpusReader(file, cmdline.getOptionValue("collection_pattern"));
 
 		final Directory dir = new SimpleFSDirectory(Paths.get(cmdline.getOptionValue(INDEX_OPTION)));
 		final IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
-		
 
-		config.setOpenMode(IndexWriterConfig.OpenMode.APPEND);
+		config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 
 		final IndexWriter writer = new IndexWriter(dir, config);
-		
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 
@@ -201,11 +205,11 @@ public class IndexTweets {
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
-				};
+				}
+				;
 
-				
 				System.out.println("# of documents indexed this round:" + writer.numDocs());
-				
+
 				try {
 					writer.close();
 				} catch (IOException e) {
@@ -239,50 +243,58 @@ public class IndexTweets {
 					continue;
 				}
 
-				cnt++;
-				Document doc = new Document();
-				doc.add(new LongField(StatusField.ID.name, status.getId(), Field.Store.YES));
-				doc.add(new LongField(StatusField.EPOCH.name, status.getEpoch(), Field.Store.YES));
-				doc.add(new TextField(StatusField.SCREEN_NAME.name, status.getScreenname(), Store.YES));
+				if (status.getLang().equals("en")
+						&& (status.getPlace() != null || (status.getLongitude() != Double.NEGATIVE_INFINITY
+								&& status.getlatitude() != Double.NEGATIVE_INFINITY))) {
+					cnt++;
+					Document doc = new Document();
+					doc.add(new LongField(StatusField.ID.name, status.getId(), Field.Store.YES));
 
-				doc.add(new Field(StatusField.TEXT.name, status.getText(), textOptions));
+					doc.add(new Field(StatusField.TEXT.name, status.getText(), textOptions));
+					doc.add(new StringField(StatusField.USER_ID.name, status.getUserid(), Field.Store.YES));
+					if (status.getUserDescription() != null)
+						doc.add(new Field(StatusField.USER_DESCRIPTION.name, status.getUserDescription(), textOptions));
+					if (status.getUserLocation() != null)
+						doc.add(new StringField(StatusField.USER_LOCATION.name, status.getUserLocation(),
+								Field.Store.YES));
+					if (status.getUserURL() != null)
+						doc.add(new StringField(StatusField.USER_URL.name, status.getUserURL(), Field.Store.YES));
 
-				doc.add(new IntField(StatusField.FRIENDS_COUNT.name, status.getFollowersCount(), Store.YES));
-				doc.add(new IntField(StatusField.FOLLOWERS_COUNT.name, status.getFriendsCount(), Store.YES));
-				doc.add(new IntField(StatusField.STATUSES_COUNT.name, status.getStatusesCount(), Store.YES));
-				doc.add(new DoubleField(StatusField.LONGITUDE.name, status.getLongitude(), Store.YES));
-				doc.add(new DoubleField(StatusField.LATITUDE.name, status.getlatitude(), Store.YES));
+					doc.add(new IntField(StatusField.STATUSES_COUNT.name, status.getStatusesCount(), Store.YES));
 
-				if(status.getPlace()!=null)
-					doc.add(new StringField(StatusField.PLACE.name, status.getPlace(), Store.YES));
-				long inReplyToStatusId = status.getInReplyToStatusId();
-				if (inReplyToStatusId > 0) {
-					doc.add(new LongField(StatusField.IN_REPLY_TO_STATUS_ID.name, inReplyToStatusId, Field.Store.YES));
-					doc.add(new LongField(StatusField.IN_REPLY_TO_USER_ID.name, status.getInReplyToUserId(),
-							Field.Store.YES));
-				}
+					if (status.getURLEntities() != null) {
+						List<String> urls = new ArrayList<String>();
 
-				String lang = status.getLang();
-				if (!lang.equals("unknown")) {
-					doc.add(new TextField(StatusField.LANG.name, status.getLang(), Store.YES));
-				}
+						for (int i = 0; i < status.getURLEntities().length; i++) {
 
-				long retweetStatusId = status.getRetweetedStatusId();
-				if (retweetStatusId > 0) {
-					doc.add(new LongField(StatusField.RETWEETED_STATUS_ID.name, retweetStatusId, Field.Store.YES));
-					doc.add(new LongField(StatusField.RETWEETED_USER_ID.name, status.getRetweetedUserId(),
-							Field.Store.YES));
-					doc.add(new IntField(StatusField.RETWEET_COUNT.name, status.getRetweetCount(), Store.YES));
-					if (status.getRetweetCount() < 0 || status.getRetweetedStatusId() < 0) {
-						LOG.warn("Error parsing retweet fields of " + status.getId());
+							String url = status.getURLEntities()[i];
+
+							if (url != null) {
+								urls.add(url);
+								
+							}
+
+						}
+						if (urls.size() > 0)
+							doc.add(new StringField("tweetOutlinkDomain", String.join(" ", urls), Field.Store.YES));
+
+					}
+
+					if (status.getLongitude() != Double.NEGATIVE_INFINITY
+							&& status.getlatitude() != Double.NEGATIVE_INFINITY) {
+						doc.add(new DoubleField(StatusField.LONGITUDE.name, status.getLongitude(), Store.YES));
+						doc.add(new DoubleField(StatusField.LATITUDE.name, status.getlatitude(), Store.YES));
+					}
+					if (status.getPlace() != null)
+						doc.add(new StringField(StatusField.PLACE.name, status.getPlace(), Store.YES));
+
+					writer.addDocument(doc);
+					if (cnt % 10000 == 0) {
+						LOG.info(cnt + " statuses indexed");
+						writer.commit();
 					}
 				}
 
-				writer.addDocument(doc);
-				if (cnt % 100000 == 0) {
-					LOG.info(cnt + " statuses indexed");
-					writer.commit();
-				}
 			}
 
 			LOG.info(String.format("Total of %s statuses added", cnt));

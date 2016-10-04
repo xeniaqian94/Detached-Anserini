@@ -16,12 +16,17 @@
 
 package io.anserini.document.twitter;
 
+import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -61,6 +66,12 @@ public class Status {
 
 	private String userid;
 
+	private String userDescription;
+
+	private String userURL;
+
+	private String[] urls;
+
 	protected Status() {
 	}
 
@@ -99,7 +110,8 @@ public class Status {
 	public String getLang() {
 		return lang;
 	}
-	public String getUserid(){
+
+	public String getUserid() {
 		return userid;
 	}
 
@@ -142,8 +154,8 @@ public class Status {
 	public int getRetweetCount() {
 		return retweetCount;
 	}
-	
-	public String getUserLocation(){
+
+	public String getUserLocation() {
 		return userLocation;
 	}
 
@@ -165,7 +177,7 @@ public class Status {
 		status.text = obj.get("text").getAsString();
 		status.id = obj.get("id").getAsLong();
 		status.screenname = obj.get("user").getAsJsonObject().get("screen_name").getAsString();
-		status.userid=obj.get("user").getAsJsonObject().get("id_str").getAsString();
+		status.userid = obj.get("user").getAsJsonObject().get("id_str").getAsString();
 		status.createdAt = obj.get("created_at").getAsString();
 
 		try {
@@ -179,7 +191,7 @@ public class Status {
 		try {
 			status.place = obj.get("place").getAsJsonObject().get("full_name").getAsString();
 		} catch (Exception e) {
-			status.place=null;
+			status.place = null;
 		}
 
 		try {
@@ -233,11 +245,33 @@ public class Status {
 		status.followersCount = obj.get("user").getAsJsonObject().get("followers_count").getAsInt();
 		status.friendsCount = obj.get("user").getAsJsonObject().get("friends_count").getAsInt();
 		status.statusesCount = obj.get("user").getAsJsonObject().get("statuses_count").getAsInt();
-		
-		try{
-			status.userLocation=obj.get("user").getAsJsonObject().get("location").getAsString();
-		}catch (Exception e) {
-			status.userLocation = "";
+
+		try {
+			status.userLocation = obj.get("user").getAsJsonObject().get("location").getAsString();
+		} catch (Exception e) {
+			status.userLocation = null;
+		}
+
+		try {
+			status.userDescription = obj.get("user").getAsJsonObject().get("description").getAsString();
+		} catch (Exception e) {
+			status.userDescription = null;
+		}
+
+		try {
+			status.userURL = obj.get("user").getAsJsonObject().get("url").getAsString();
+		} catch (Exception e) {
+			status.userURL = null;
+		}
+
+		try {
+
+			List<String> l = new ArrayList<String>();
+			for (JsonElement e : obj.get("entities").getAsJsonObject().get("urls").getAsJsonArray())
+				l.add(e.getAsJsonObject().get("expanded_url").toString());
+			status.urls = l.toArray(new String[l.size()]);
+		} catch (Exception e) {
+			status.urls = null;
 		}
 
 		status.jsonObject = obj;
@@ -266,5 +300,20 @@ public class Status {
 		status.text = b.toString().trim();
 
 		return status;
+	}
+
+	public String getUserDescription() {
+		// TODO Auto-generated method stub
+		return userDescription;
+	}
+
+	public String getUserURL() {
+		// TODO Auto-generated method stub
+		return userURL;
+	}
+
+	public String[] getURLEntities() {
+		// TODO Auto-generated method stub
+		return urls;
 	}
 }
