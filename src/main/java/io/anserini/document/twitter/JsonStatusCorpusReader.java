@@ -19,6 +19,9 @@ package io.anserini.document.twitter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,6 +55,7 @@ public class JsonStatusCorpusReader implements StatusStream {
 
 		files = file.listFiles(new FileFilter() {
 			public boolean accept(File path) {
+
 				// System.out.println("Currently checking corpus block .gz
 				// "+path.toString()+" "+path.toString().contains("2015-12-"));
 				return (path.getName().endsWith(".gz")) ? true : false;
@@ -72,17 +76,59 @@ public class JsonStatusCorpusReader implements StatusStream {
 		if (!file.isDirectory()) {
 			throw new IOException("Expecting " + file + " to be a directory!");
 		}
+		final List<File> directories = new ArrayList<File>();
+		final List<File> files_temp = new ArrayList<File>();
 
-		files = file.listFiles(new FileFilter() {
+		files_temp.addAll(Arrays.asList(file.listFiles(new FileFilter() {
 			public boolean accept(File path) {
-				boolean contains=false;
+				System.out.println(path);
+				if (!path.isFile())
+					directories.add(path);
+				boolean contains = false;
 				if (optionValue.length() > 0)
-					for (String file:optionValue.split(":"))
+					for (String file : optionValue.split(":")) {
+						System.out.println(file);
 						if (path.toString().contains(file))
-							contains=true;
-				return (path.getName().endsWith(".gz")&&contains) ? true : false;
+							contains = true;
+					}
+				return (path.getName().endsWith(".gz") && contains) ? true : false;
 			}
-		});
+		})));
+		for (File f : directories) {
+			files_temp.addAll(Arrays.asList(f.listFiles(new FileFilter() {
+				public boolean accept(File path) {
+					System.out.println(path);
+					if (!path.isFile())
+						directories.add(path);
+					boolean contains = false;
+					if (optionValue.length() > 0)
+						for (String file : optionValue.split(":")) {
+							System.out.println(file);
+							if (path.toString().contains(file))
+								contains = true;
+						}
+					return (path.getName().endsWith(".gz") && contains) ? true : false;
+				}
+			})));
+		}
+
+		files = files_temp.toArray(new File[files_temp.size()]);
+
+		// files = file.listFiles(new FileFilter() {
+		// public boolean accept(File path) {
+		// System.out.println(path);
+		// if (!path.isFile())
+		// directories.add(path);
+		// boolean contains = false;
+		// if (optionValue.length() > 0)
+		// for (String file : optionValue.split(":")) {
+		// System.out.println(file);
+		// if (path.toString().contains(file))
+		// contains = true;
+		// }
+		// return (path.getName().endsWith(".gz") && contains) ? true : false;
+		// }
+		// });
 		System.out.println("Check recursion: files listed # " + files.length);
 
 		if (files.length == 0) {
@@ -120,7 +166,6 @@ public class JsonStatusCorpusReader implements StatusStream {
 		}
 	}
 
-	
 	public String nextRaw() throws IOException {
 		if (currentBlock == null) {
 			currentBlock = new JsonStatusBlockReader(files[nextFile]);
