@@ -165,7 +165,7 @@ public class Status {
 			obj = (JsonObject) JSON_PARSER.parse(json);
 		} catch (Exception e) {
 			// Catch any malformed JSON.
-			LOG.error("Error parsing: " + json);
+//			LOG.error("Error parsing: " + json);
 			return null;
 		}
 
