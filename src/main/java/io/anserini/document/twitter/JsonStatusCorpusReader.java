@@ -81,13 +81,12 @@ public class JsonStatusCorpusReader implements StatusStream {
 
 		files_temp.addAll(Arrays.asList(file.listFiles(new FileFilter() {
 			public boolean accept(File path) {
-				System.out.println(path);
+
 				if (!path.isFile())
 					directories.add(path);
 				boolean contains = false;
 				if (optionValue.length() > 0)
 					for (String file : optionValue.split(":")) {
-						System.out.println(file);
 						if (path.toString().contains(file))
 							contains = true;
 					}
@@ -97,13 +96,9 @@ public class JsonStatusCorpusReader implements StatusStream {
 		for (File f : directories) {
 			files_temp.addAll(Arrays.asList(f.listFiles(new FileFilter() {
 				public boolean accept(File path) {
-					System.out.println(path);
-					if (!path.isFile())
-						directories.add(path);
 					boolean contains = false;
 					if (optionValue.length() > 0)
 						for (String file : optionValue.split(":")) {
-							System.out.println(file);
 							if (path.toString().contains(file))
 								contains = true;
 						}
