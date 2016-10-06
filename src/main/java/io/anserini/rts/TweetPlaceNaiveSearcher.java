@@ -255,7 +255,7 @@ class TweetPlaceNaiveSearcher {
 
 						if (d.get(field) != null) {
 							for (String url : d.get(field).split(" ")) {
-								
+
 								System.out.println(StringUtils.strip(url, "\""));
 
 								String domain = getDomainName(StringUtils.strip(url, "\""));
@@ -315,13 +315,12 @@ class TweetPlaceNaiveSearcher {
 
 			}
 
-			goldFout.close();
-			docVectorsFout.close();
-			dictFout.close();
-			docVectorsBinaryFout.close();
-			reader.close();
-
 		}
+		goldFout.close();
+		docVectorsFout.close();
+		dictFout.close();
+		docVectorsBinaryFout.close();
+		reader.close();
 
 	}
 }
