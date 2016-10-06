@@ -4,9 +4,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -40,6 +45,8 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 
+import io.anserini.index.IndexTweets;
+import io.anserini.index.IndexTweetsDefaultStatusClassNoLinkTitle;
 import io.anserini.nrts.TweetSearcher;
 import io.anserini.nrts.TweetStreamIndexer.StatusField;
 import twitter4j.TwitterException;
@@ -112,7 +119,7 @@ class TweetPlaceNaiveSearcher {
 				+ searcher.collectionStatistics(TweetStreamReader.StatusField.TEXT.name).docCount());
 
 		BufferedWriter goldFout = new BufferedWriter(new FileWriter("clusteringDataset/gold_standard"));
-		BufferedWriter docVectorsFout = new BufferedWriter(new FileWriter("clusteringDataset/docVectors"));
+		BufferedWriter docVectorsFout = new BufferedWriter(new FileWriter("clusteringDataset/docVectorsTF"));
 		BufferedWriter docVectorsBinaryFout = new BufferedWriter(new FileWriter("clusteringDataset/docVectorsBinary"));
 		BufferedWriter dictFout = new BufferedWriter(new FileWriter("clusteringDataset/dict"));
 		BufferedWriter rawTextFout = new BufferedWriter(new FileWriter("clusteringDataset/rawText"));
@@ -179,7 +186,7 @@ class TweetPlaceNaiveSearcher {
 
 					d = searcher.doc(docId);
 					if (hasHit.containsKey(d.get(TweetStreamReader.StatusField.ID.name))) {
-						System.out.println("Hit once! bad");
+						System.out.println("Hit once! Duplicate bad");
 						dupcount += 1;
 					} else
 						hasHit.put(TweetStreamReader.StatusField.ID.name, 0);
@@ -194,77 +201,107 @@ class TweetPlaceNaiveSearcher {
 					rawTextFout.flush();
 					docCount += 1;
 
-					Terms terms = reader.getTermVector(docId, TweetStreamReader.StatusField.TEXT.name);
-					if (terms != null && terms.size() > 0) {
-						TermsEnum termsEnum = terms.iterator(); // access the
-																// terms
-																// for this
-																// field
-						BytesRef term = null;
-						while ((term = termsEnum.next()) != null) {// explore
-																	// the
-																	// terms for
-																	// this
-																	// field
-							DocsEnum docsEnum = termsEnum.docs(null, null); // enumerate
-							// through
-							// documents,
-							// in
-							// this
-							// case
-							// only
-							// one
-							int docIdEnum;
-							while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-								String thisTerm = term.utf8ToString();
-								int termID;
-								if (dict.containsKey(thisTerm)) {
-									termID = dict.get(thisTerm);
-									df.put(termID, df.get(termID) + 1);
-								} else {
-									termID = dict.size();
-									dict.put(thisTerm, termID);
-									df.put(termID, 1);
+					List<String> fields = new ArrayList<String>(Arrays.asList(IndexTweets.StatusField.TEXT.name,
+							IndexTweets.StatusField.USER_DESCRIPTION.name));
+					for (String field : fields) {
+						Terms terms = reader.getTermVector(docId, field);
+						if (terms != null && terms.size() > 0) {
+							TermsEnum termsEnum = terms.iterator();
+							BytesRef term = null;
+							while ((term = termsEnum.next()) != null) {
+								DocsEnum docsEnum = termsEnum.docs(null, null);
+								int docIdEnum;
+								while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+									String thisTerm = field + ":" + term.utf8ToString();
+									int termID;
+									if (dict.containsKey(thisTerm)) {
+										termID = dict.get(thisTerm);
+
+									} else {
+										termID = dict.size();
+										dict.put(thisTerm, termID);
+									}
+
+									docVectorsFout.write(termID + ":" + docsEnum.freq() + " ");
+									docVectorsBinaryFout.write(termID + ":1 ");
+
 								}
+							}
+						}
 
-								docVectorsFout.write(termID + ":" + docsEnum.freq() + " ");
-								docVectorsBinaryFout.write(termID + ":1 ");
+					}
 
+					fields = new ArrayList<String>(
+							Arrays.asList(IndexTweets.StatusField.USER_URL.name, "tweetOutlinkDomain"));
+					for (String field : fields) {
+
+						if (d.get(field) != null) {
+							for (String url : d.get(field).split(" ")) {
+
+								String domain = IndexTweetsDefaultStatusClassNoLinkTitle.getDomainName(url);
+								if (domain != null) {
+									String thisTerm = field + ":" + d.get(field);
+									int termID;
+									if (dict.containsKey(thisTerm)) {
+										termID = dict.get(thisTerm);
+
+									} else {
+										termID = dict.size();
+										dict.put(thisTerm, termID);
+									}
+									docVectorsFout.write(termID + ":1 ");
+									docVectorsBinaryFout.write(termID + ":1 ");
+								}
 							}
 
+						}
+					}
+
+					fields = new ArrayList<String>(Arrays.asList(IndexTweets.StatusField.USER_LOCATION.name));
+					for (String field : fields) {
+						if (d.get(field) != null) {
+							String thisTerm = field + ":" + d.get(field);
+							int termID;
+							if (dict.containsKey(thisTerm)) {
+								termID = dict.get(thisTerm);
+
+							} else {
+								termID = dict.size();
+								dict.put(thisTerm, termID);
+							}
+
+							docVectorsFout.write(termID + ":1 ");
+							docVectorsBinaryFout.write(termID + ":1 ");
 						}
 					}
 					docVectorsFout.newLine();
 					docVectorsFout.flush();
 					docVectorsBinaryFout.newLine();
 					docVectorsBinaryFout.flush();
-					goldFout.write(cityName[city]);
-					goldFout.newLine();
-					goldFout.flush();
-					userIDFout.write(d.get("screen_name"));
-					userIDFout.newLine();
-				}
-				System.out.println("City " + cityName[city] + " " + (collector.getTotalHits() - dupcount) + " hits.");
-				System.out.println();
-			}
-		}
-		for (String term : dict.keySet()) {
-			dictFout.write(term + " " + dict.get(term));
-			dictFout.newLine();
-		}
-		for (int termID : df.keySet()) {
-			dfFout.write(termID + ":" + df.get(termID));
-			dfFout.newLine();
-		}
 
-		goldFout.close();
-		docVectorsFout.close();
-		dictFout.close();
-		rawTextFout.close();
-		userIDFout.close();
-		dfFout.close();
-		reader.close();
+					// rawFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\t\\n\\r]",
+					// " "));
+					// rawFout.newLine();
+					// rawFout.flush();
+				}
+			}
+
+			SortedSet<String> terms = new TreeSet<String>(dict.keySet());
+			for (String term : terms) {
+				dictFout.write(term + " " + dict.get(term));
+				dictFout.newLine();
+				// dictReverseFout.write(dict.get(term) + " " + term);
+				// dictReverseFout.newLine();
+
+			}
+
+			goldFout.close();
+			docVectorsFout.close();
+			dictFout.close();
+			docVectorsBinaryFout.close();
+			reader.close();
+
+		}
 
 	}
-
 }
