@@ -48,7 +48,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 
 import io.anserini.index.IndexTweets;
-import io.anserini.index.IndexTweetsDefaultStatusClassNoLinkTitle;
 import io.anserini.nrts.TweetSearcher;
 import io.anserini.nrts.TweetStreamIndexer.StatusField;
 import twitter4j.TwitterException;
