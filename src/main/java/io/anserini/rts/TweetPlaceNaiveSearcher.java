@@ -20,6 +20,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.codecs.TermVectorsReader;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.TermVector;
@@ -254,8 +255,9 @@ class TweetPlaceNaiveSearcher {
 
 						if (d.get(field) != null) {
 							for (String url : d.get(field).split(" ")) {
+//								System.out.println(url);
 
-								String domain = getDomainName(url);
+								String domain = getDomainName(StringUtils.strip(url, "\""));
 								if (domain != null) {
 									String thisTerm = field + ":" + d.get(field);
 									int termID;
