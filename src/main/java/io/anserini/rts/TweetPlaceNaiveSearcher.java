@@ -260,7 +260,7 @@ class TweetPlaceNaiveSearcher {
 
 								String domain = getDomainName(StringUtils.strip(url, "\""));
 								if (domain != null) {
-									String thisTerm = field + ":" + d.get(field);
+									String thisTerm = field + ":" +domain;
 									int termID;
 									if (dict.containsKey(thisTerm)) {
 										termID = dict.get(thisTerm);
@@ -299,10 +299,9 @@ class TweetPlaceNaiveSearcher {
 					docVectorsBinaryFout.newLine();
 					docVectorsBinaryFout.flush();
 
-					// rawFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\t\\n\\r]",
-					// " "));
-					// rawFout.newLine();
-					// rawFout.flush();
+					goldFout.write(cityName[city]);
+					goldFout.newLine();
+					goldFout.flush();
 				}
 			}
 
