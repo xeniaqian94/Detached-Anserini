@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -77,6 +79,22 @@ class TweetPlaceNaiveSearcher {
 
 		System.out.println(
 				"Memory used:  " + ((runtime.totalMemory() - runtime.freeMemory()) / (1024L * 1024L)) + " MB\n");
+	}
+	
+	public static String getDomainName(String url) {
+		URI uri;
+		try {
+			uri = new URI(url);
+
+			String domain = uri.getHost();
+			if (domain != null)
+				return domain.startsWith("www.") ? domain.substring(4) : domain;
+
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public static void main(String[] args) throws IOException, ParseException, TwitterException {
