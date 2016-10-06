@@ -80,7 +80,7 @@ class TweetPlaceNaiveSearcher {
 		System.out.println(
 				"Memory used:  " + ((runtime.totalMemory() - runtime.freeMemory()) / (1024L * 1024L)) + " MB\n");
 	}
-	
+
 	public static String getDomainName(String url) {
 		URI uri;
 		try {
@@ -256,7 +256,7 @@ class TweetPlaceNaiveSearcher {
 						if (d.get(field) != null) {
 							for (String url : d.get(field).split(" ")) {
 
-								String domain = IndexTweetsDefaultStatusClassNoLinkTitle.getDomainName(url);
+								String domain = getDomainName(url);
 								if (domain != null) {
 									String thisTerm = field + ":" + d.get(field);
 									int termID;
