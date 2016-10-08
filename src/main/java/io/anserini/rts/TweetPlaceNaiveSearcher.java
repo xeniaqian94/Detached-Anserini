@@ -21,6 +21,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 import org.apache.lucene.codecs.TermVectorsReader;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.TermVector;
@@ -149,6 +150,7 @@ class TweetPlaceNaiveSearcher {
 		int docCount = 0;
 
 		for (int city = 0; city < cityName.length; city++) {
+
 			// Pittsburgh's coordinate -79.976389, 40.439722
 
 			printMemoryUsage(true);
@@ -256,11 +258,12 @@ class TweetPlaceNaiveSearcher {
 						if (d.get(field) != null) {
 							for (String url : d.get(field).split(" ")) {
 
-//								System.out.println(StringUtils.strip(url, "\""));
+								// System.out.println(StringUtils.strip(url,
+								// "\""));
 
 								String domain = getDomainName(StringUtils.strip(url, "\""));
 								if (domain != null) {
-									String thisTerm = field + ":" +domain;
+									String thisTerm = field + ":" + domain;
 									int termID;
 									if (dict.containsKey(thisTerm)) {
 										termID = dict.get(thisTerm);
@@ -281,6 +284,7 @@ class TweetPlaceNaiveSearcher {
 					for (String field : fields) {
 						if (d.get(field) != null) {
 							String thisTerm = field + ":" + d.get(field);
+							thisTerm=thisTerm.replaceAll("[\\r\\n]+", " ");
 							int termID;
 							if (dict.containsKey(thisTerm)) {
 								termID = dict.get(thisTerm);
@@ -299,6 +303,10 @@ class TweetPlaceNaiveSearcher {
 					docVectorsBinaryFout.newLine();
 					docVectorsBinaryFout.flush();
 
+					userIDFout.write(d.get(IndexTweets.StatusField.USER_ID.name));
+					userIDFout.newLine();
+					userIDFout.flush();
+
 					goldFout.write(cityName[city]);
 					goldFout.newLine();
 					goldFout.flush();
@@ -315,6 +323,7 @@ class TweetPlaceNaiveSearcher {
 			}
 
 		}
+		userIDFout.close();
 		goldFout.close();
 		docVectorsFout.close();
 		dictFout.close();
