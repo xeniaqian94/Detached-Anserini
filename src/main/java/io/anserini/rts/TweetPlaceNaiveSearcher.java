@@ -224,7 +224,7 @@ class TweetPlaceNaiveSearcher {
 						hasHit.put(TweetStreamReader.StatusField.ID.name, 0);
 
 					if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))) {
-
+						userIDList.remove(d.get(IndexTweets.StatusField.USER_ID.name));
 						rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));
 						rawTextFout.newLine();
 						rawTextFout.flush();
