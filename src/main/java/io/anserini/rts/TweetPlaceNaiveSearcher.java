@@ -1,7 +1,9 @@
 package io.anserini.rts;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
@@ -100,6 +102,16 @@ class TweetPlaceNaiveSearcher {
 
 	public static void main(String[] args) throws IOException, ParseException, TwitterException {
 		// TODO Auto-generated method stub
+
+		ArrayList<String> userIDList = new ArrayList<String>();
+		try (BufferedReader br = new BufferedReader(new FileReader(new File("userID")))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				userIDList.add(line.replaceAll("[\\r\\n]+", ""));
+
+				// process the line.
+			}
+		}
 
 		for (int i = 0; i < cityName.length; i++) {
 			System.out.println(cityName[i] + " " + longitude[i] + " " + latitude[i]);
@@ -210,117 +222,111 @@ class TweetPlaceNaiveSearcher {
 						dupcount += 1;
 					} else
 						hasHit.put(TweetStreamReader.StatusField.ID.name, 0);
-					// if (d.get((TweetStreamReader.StatusField.PLACE.name)) !=
-					// null)
-					// System.out.print(" " +
-					// d.get((TweetStreamReader.StatusField.ID.name)) + " "
-					// + d.get((TweetStreamReader.StatusField.PLACE.name)));
 
-					rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));
-					rawTextFout.newLine();
-					rawTextFout.flush();
-					docCount += 1;
+					if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))) {
 
-					List<String> fields = new ArrayList<String>(Arrays.asList(IndexTweets.StatusField.TEXT.name,
-							IndexTweets.StatusField.USER_DESCRIPTION.name));
-					for (String field : fields) {
-						Terms terms = reader.getTermVector(docId, field);
-						if (terms != null && terms.size() > 0) {
-							TermsEnum termsEnum = terms.iterator();
-							BytesRef term = null;
-							while ((term = termsEnum.next()) != null) {
-								DocsEnum docsEnum = termsEnum.docs(null, null);
-								int docIdEnum;
-								while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-									String thisTerm = field + ":" + term.utf8ToString();
-									int termID;
-									if (dict.containsKey(thisTerm)) {
-										termID = dict.get(thisTerm);
+						rawTextFout.write(d.get(TweetStreamReader.StatusField.TEXT.name).replaceAll("[\\r\\n]+", " "));
+						rawTextFout.newLine();
+						rawTextFout.flush();
+						docCount += 1;
 
-									} else {
-										termID = dict.size();
-										dict.put(thisTerm, termID);
+						List<String> fields = new ArrayList<String>(Arrays.asList(IndexTweets.StatusField.TEXT.name,
+								IndexTweets.StatusField.USER_DESCRIPTION.name));
+						for (String field : fields) {
+							Terms terms = reader.getTermVector(docId, field);
+							if (terms != null && terms.size() > 0) {
+								TermsEnum termsEnum = terms.iterator();
+								BytesRef term = null;
+								while ((term = termsEnum.next()) != null) {
+									DocsEnum docsEnum = termsEnum.docs(null, null);
+									int docIdEnum;
+									while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+										String thisTerm = field + ":" + term.utf8ToString();
+										int termID;
+										if (dict.containsKey(thisTerm)) {
+											termID = dict.get(thisTerm);
+
+										} else {
+											termID = dict.size();
+											dict.put(thisTerm, termID);
+										}
+
+										docVectorsFout.write(termID + ":" + docsEnum.freq() + " ");
+										docVectorsBinaryFout.write(termID + ":1 ");
+
 									}
-
-									docVectorsFout.write(termID + ":" + docsEnum.freq() + " ");
-									docVectorsBinaryFout.write(termID + ":1 ");
-
-								}
-							}
-						}
-
-					}
-
-					fields = new ArrayList<String>(
-							Arrays.asList(IndexTweets.StatusField.USER_URL.name, "tweetOutlinkDomain"));
-					for (String field : fields) {
-
-						if (d.get(field) != null) {
-							for (String url : d.get(field).split(" ")) {
-
-								// System.out.println(StringUtils.strip(url,
-								// "\""));
-
-								String domain = getDomainName(StringUtils.strip(url, "\""));
-								if (domain != null) {
-									String thisTerm = field + ":" + domain;
-									int termID;
-									if (dict.containsKey(thisTerm)) {
-										termID = dict.get(thisTerm);
-
-									} else {
-										termID = dict.size();
-										dict.put(thisTerm, termID);
-									}
-									docVectorsFout.write(termID + ":1 ");
-									docVectorsBinaryFout.write(termID + ":1 ");
 								}
 							}
 
 						}
-					}
 
-					fields = new ArrayList<String>(Arrays.asList(IndexTweets.StatusField.USER_LOCATION.name));
-					for (String field : fields) {
-						if (d.get(field) != null) {
-							String thisTerm = field + ":" + d.get(field);
-							thisTerm=thisTerm.replaceAll("[\\r\\n]+", " ");
-							int termID;
-							if (dict.containsKey(thisTerm)) {
-								termID = dict.get(thisTerm);
+						fields = new ArrayList<String>(
+								Arrays.asList(IndexTweets.StatusField.USER_URL.name, "tweetOutlinkDomain"));
+						for (String field : fields) {
 
-							} else {
-								termID = dict.size();
-								dict.put(thisTerm, termID);
+							if (d.get(field) != null) {
+								for (String url : d.get(field).split(" ")) {
+
+									// System.out.println(StringUtils.strip(url,
+									// "\""));
+
+									String domain = getDomainName(StringUtils.strip(url, "\""));
+									if (domain != null) {
+										String thisTerm = field + ":" + domain;
+										int termID;
+										if (dict.containsKey(thisTerm)) {
+											termID = dict.get(thisTerm);
+
+										} else {
+											termID = dict.size();
+											dict.put(thisTerm, termID);
+										}
+										docVectorsFout.write(termID + ":1 ");
+										docVectorsBinaryFout.write(termID + ":1 ");
+									}
+								}
+
 							}
-
-							docVectorsFout.write(termID + ":1 ");
-							docVectorsBinaryFout.write(termID + ":1 ");
 						}
+
+						fields = new ArrayList<String>(Arrays.asList(IndexTweets.StatusField.USER_LOCATION.name));
+						for (String field : fields) {
+							if (d.get(field) != null) {
+								String thisTerm = field + ":" + d.get(field);
+								thisTerm = thisTerm.replaceAll("[\\r\\n]+", " ");
+								int termID;
+								if (dict.containsKey(thisTerm)) {
+									termID = dict.get(thisTerm);
+
+								} else {
+									termID = dict.size();
+									dict.put(thisTerm, termID);
+								}
+
+								docVectorsFout.write(termID + ":1 ");
+								docVectorsBinaryFout.write(termID + ":1 ");
+							}
+						}
+						docVectorsFout.newLine();
+						docVectorsFout.flush();
+						docVectorsBinaryFout.newLine();
+						docVectorsBinaryFout.flush();
+
+						userIDFout.write(d.get(IndexTweets.StatusField.USER_ID.name));
+						userIDFout.newLine();
+						userIDFout.flush();
+
+						goldFout.write(cityName[city]);
+						goldFout.newLine();
+						goldFout.flush();
 					}
-					docVectorsFout.newLine();
-					docVectorsFout.flush();
-					docVectorsBinaryFout.newLine();
-					docVectorsBinaryFout.flush();
-
-					userIDFout.write(d.get(IndexTweets.StatusField.USER_ID.name));
-					userIDFout.newLine();
-					userIDFout.flush();
-
-					goldFout.write(cityName[city]);
-					goldFout.newLine();
-					goldFout.flush();
 				}
 			}
-
-			SortedSet<String> terms = new TreeSet<String>(dict.keySet());
-			for (String term : terms) {
-				dictFout.write(term + " " + dict.get(term));
-				dictFout.newLine();
-				// dictReverseFout.write(dict.get(term) + " " + term);
-				// dictReverseFout.newLine();
-
-			}
+		}
+		SortedSet<String> terms = new TreeSet<String>(dict.keySet());
+		for (String term : terms) {
+			dictFout.write(term + " " + dict.get(term));
+			dictFout.newLine();
 
 		}
 		userIDFout.close();
