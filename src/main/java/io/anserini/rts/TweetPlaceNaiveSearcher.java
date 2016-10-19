@@ -316,28 +316,27 @@ class TweetPlaceNaiveSearcher {
 
                     map.put(thisTerm, kldivergence);
                   }
-                  List<Entry<String, Double>> expansionList = entriesSortedByValues(map);
-                  for (int m = 0; m < Math.min(10, expansionList.size()); m++) {
-                    String thisTerm = expansionList.get(m).getKey();
-                    int termID;
-                    if (!textFieldTerms.containsKey(thisTerm)) {
-                      if (dict.containsKey(thisTerm)) {
-                        termID = dict.get(thisTerm);
+                }
+              }
+              List<Entry<String, Double>> expansionList = entriesSortedByValues(map);
+              for (int m = 0; m < Math.min(10, expansionList.size()); m++) {
+                String thisTerm = expansionList.get(m).getKey();
+                int termID;
+                if (!textFieldTerms.containsKey(thisTerm)) {
+                  if (dict.containsKey(thisTerm)) {
+                    termID = dict.get(thisTerm);
 
-                      } else {
-                        termID = dict.size();
-                        dict.put(thisTerm, termID);
-                        textFieldTerms.put(thisTerm, 1);
-                      }
-
-                      docVectorsBinarySmoothingFout.write(termID + ":" + discount + " ");
-                      System.out.println(termID + ":" + expansionList.get(m).getValue() + " " + discount);
-
-                    }
-
+                  } else {
+                    termID = dict.size();
+                    dict.put(thisTerm, termID);
+                    textFieldTerms.put(thisTerm, 1);
                   }
 
+                  docVectorsBinarySmoothingFout.write(termID + ":" + discount + " ");
+                  System.out.println(termID + ":" + expansionList.get(m).getValue() + " " + discount);
+
                 }
+
               }
 
             }
