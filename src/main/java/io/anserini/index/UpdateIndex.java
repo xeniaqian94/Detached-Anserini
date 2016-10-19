@@ -327,8 +327,7 @@ public class UpdateIndex {
 
           if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))
               && hm.containsKey(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name)))) {
-            for (int j = 0; j < 50; j++)
-              d.removeField("timeline");
+            System.out.println("Has timeline field?" + d.get("timeline") != null);
             System.out.println(reader.getDocCount("timeline"));
             d.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
                 textOptions));
@@ -342,7 +341,7 @@ public class UpdateIndex {
             for (IndexableField field : d.getFields()) {
               d_new.add(field);
             }
-            System.out.println(d_new.getFields());
+            // System.out.println(d_new.getFields());
             d_new.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
                 textOptions));
             d_new.add(new StringField("label", "why", Store.YES));
