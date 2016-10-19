@@ -327,22 +327,22 @@ public class UpdateIndex {
 
           if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))
               && hm.containsKey(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name)))) {
-            System.out.println("Has timeline field?" + (d.get("timeline") != null));
-            System.out.println(reader.getDocCount("timeline"));
-            d.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
-                textOptions));
+//            System.out.println("Has timeline field?" + (d.get("timeline") != null));
+//            System.out.println(reader.getDocCount("timeline"));
+//            d.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
+//                textOptions));
             System.out.println("Found a user hit");
             BytesRefBuilder brb = new BytesRefBuilder();
             NumericUtils.longToPrefixCodedBytes(Long.parseLong(d.get(IndexTweets.StatusField.ID.name)), 0, brb);
             Term term = new Term(IndexTweets.StatusField.ID.name, brb.get());
-            System.out.println(reader.getDocCount("timeline"));
+//            System.out.println(reader.getDocCount("timeline"));
 
             Document d_new = new Document();
 //            for (IndexableField field : d.getFields()) {
 //              d_new.add(field);
 //            }
             // System.out.println(d_new.getFields());
-            d_new.add(new StringField("userBackground",d.get(IndexTweets.StatusField.USER_ID.name),Store.YES));
+            d_new.add(new StringField("userBackground", d.get(IndexTweets.StatusField.USER_ID.name),Store.YES));
             d_new.add(new Field("timeline",hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))), textOptions));
             // System.out.println(d_new.get());
             writer.addDocument(d_new);
@@ -375,7 +375,7 @@ public class UpdateIndex {
             // writer.addDocument(d);
             // writer.commit();
 
-            System.out.println(reader.getDocCount("timeline"));
+//            System.out.println(reader.getDocCount("timeline"));
             // writer.updateDocument(term, d);
             // writer.commit();
 

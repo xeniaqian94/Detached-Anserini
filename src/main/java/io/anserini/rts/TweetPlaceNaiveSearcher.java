@@ -151,7 +151,8 @@ class TweetPlaceNaiveSearcher {
     BufferedWriter goldFout = new BufferedWriter(new FileWriter("clusteringDataset/gold_standard"));
     BufferedWriter docVectorsFout = new BufferedWriter(new FileWriter("clusteringDataset/docVectorsTF"));
     BufferedWriter docVectorsBinaryFout = new BufferedWriter(new FileWriter("clusteringDataset/docVectorsBinary"));
-    BufferedWriter docVectorsBinarySmoothingFout=new BufferedWriter(new FileWriter("clusteringDataset/docVectorsSmoothingBinary"));
+    BufferedWriter docVectorsBinarySmoothingFout = new BufferedWriter(
+        new FileWriter("clusteringDataset/docVectorsSmoothingBinary"));
     BufferedWriter dictFout = new BufferedWriter(new FileWriter("clusteringDataset/dict"));
     BufferedWriter rawTextFout = new BufferedWriter(new FileWriter("clusteringDataset/rawText"));
     BufferedWriter dfFout = new BufferedWriter(new FileWriter("clusteringDataset/df"));
@@ -264,64 +265,47 @@ class TweetPlaceNaiveSearcher {
             }
 
             fields = new ArrayList<String>(Arrays.asList("timeline"));
-            
-            
-           Term t2 = new Term("userBackground", d.get(IndexTweets.StatusField.USER_ID.name));
-          TermQuery tqnew = new TermQuery(t2);
-//
-//          totalHitCollector = new TotalHitCountCollector();
-//
-//          searcher.search(tqnew, totalHitCollector);
-//
-//          if (totalHitCollector.getTotalHits() > 0) {
+
+            Term t2 = new Term("userBackground", d.get(IndexTweets.StatusField.USER_ID.name));
+            TermQuery tqnew = new TermQuery(t2);
             TopScoreDocCollector collector2 = TopScoreDocCollector.create(1);
             searcher.search(tqnew, collector2);
             ScoreDoc[] hits2 = collector2.topDocs().scoreDocs;
-//
-//            System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
-//
+
             for (int k = 0; k < hits2.length; k++) {
               int docId2 = hits2[k].doc;
               Document d2 = searcher.doc(docId2);
-              System.out.println(d2.getFields());
-            }
-//          }
+              // System.out.println(d2.getFields());
 
-            for (String field : fields)
-              
-              if (d.getField(field) != null) {
-                System.out.println("This document has timeline not null");
-                Terms terms = reader.getTermVector(docId, field);
-                if (terms != null && terms.size() > 0) {
-                  TermsEnum termsEnum = terms.iterator();
-                  BytesRef term = null;
-                  while ((term = termsEnum.next()) != null) {
-                    DocsEnum docsEnum = termsEnum.docs(null, null);
-                    int docIdEnum;
-                    while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                      String thisTerm = "text" + ":" + term.utf8ToString();
-                      int termID;
-                      if (!textFieldTerms.containsKey(thisTerm)) {
-                        if (dict.containsKey(thisTerm)) {
-                          termID = dict.get(thisTerm);
+              System.out.println("This userBackgroundFile has timeline not null");
+              Terms terms = reader.getTermVector(docId2, "timeline");
+              if (terms != null && terms.size() > 0) {
+                TermsEnum termsEnum = terms.iterator();
+                BytesRef term = null;
+                while ((term = termsEnum.next()) != null) {
+                  DocsEnum docsEnum = termsEnum.docs(null, null);
+                  int docIdEnum;
+                  while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+                    String thisTerm = "text" + ":" + term.utf8ToString();
+                    int termID;
+                    if (!textFieldTerms.containsKey(thisTerm)) {
+                      if (dict.containsKey(thisTerm)) {
+                        termID = dict.get(thisTerm);
 
-                        } else {
-                          termID = dict.size();
-                          dict.put(thisTerm, termID);
-                          textFieldTerms.put(thisTerm, 1);
-                        }
-                        // docVectorsFout.write(termID + ":" + (discount *
-                        // docsEnum.freq()) + " ");
-                        // docVectorsBinaryFout.write(termID + ":" + discount +
-                        // " ");
-                        docVectorsBinarySmoothingFout.write(termID + ":" + discount + " ");
+                      } else {
+                        termID = dict.size();
+                        dict.put(thisTerm, termID);
+                        textFieldTerms.put(thisTerm, 1);
                       }
 
+                      docVectorsBinarySmoothingFout.write(termID + ":" + discount + " ");
                     }
+
                   }
                 }
-
               }
+
+            }
 
             fields = new ArrayList<String>(Arrays.asList(IndexTweets.StatusField.USER_URL.name, "tweetOutlinkDomain"));
             for (String field : fields) {
