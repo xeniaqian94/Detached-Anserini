@@ -282,29 +282,32 @@ public class UpdateIndex {
 
       TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
 
-//      Query hasFieldQuery = new ConstantScoreQuery(new FieldValueFilter("timeline"));
-//
-//      searcher.search(hasFieldQuery, totalHitCollector);
-//
-//      if (totalHitCollector.getTotalHits() > 0) {
-//        TopScoreDocCollector collector = TopScoreDocCollector.create(Math.max(0, totalHitCollector.getTotalHits()));
-//        searcher.search(finalQuery, collector);
-//        ScoreDoc[] hits = collector.topDocs().scoreDocs;
-//
-//       
-//        HashMap<String, Integer> hasHit = new HashMap<String, Integer>();
-//        int dupcount = 0;
-//        for (int i = 0; i < hits.length; ++i) {
-//          int docId = hits[i].doc;
-//          Document d;
-//
-//          d = searcher.doc(docId);
-//          
-//          System.out.println(d.getFields());
-//        }
-//      }
+      // Query hasFieldQuery = new ConstantScoreQuery(new
+      // FieldValueFilter("timeline"));
+      //
+      // searcher.search(hasFieldQuery, totalHitCollector);
+      //
+      // if (totalHitCollector.getTotalHits() > 0) {
+      // TopScoreDocCollector collector =
+      // TopScoreDocCollector.create(Math.max(0,
+      // totalHitCollector.getTotalHits()));
+      // searcher.search(finalQuery, collector);
+      // ScoreDoc[] hits = collector.topDocs().scoreDocs;
+      //
+      //
+      // HashMap<String, Integer> hasHit = new HashMap<String, Integer>();
+      // int dupcount = 0;
+      // for (int i = 0; i < hits.length; ++i) {
+      // int docId = hits[i].doc;
+      // Document d;
+      //
+      // d = searcher.doc(docId);
+      //
+      // System.out.println(d.getFields());
+      // }
+      // }
 
-//      totalHitCollector = new TotalHitCountCollector();
+      // totalHitCollector = new TotalHitCountCollector();
       searcher.search(finalQuery, totalHitCollector);
 
       if (totalHitCollector.getTotalHits() > 0) {
@@ -324,7 +327,7 @@ public class UpdateIndex {
 
           if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))
               && hm.containsKey(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name)))) {
-            for (int j=0;j<50;j++)
+            for (int j = 0; j < 50; j++)
               d.removeField("timeline");
             System.out.println(reader.getDocCount("timeline"));
             d.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
@@ -344,7 +347,27 @@ public class UpdateIndex {
                 textOptions));
             // System.out.println(d_new.get());
             writer.addDocument(d_new);
-          
+
+            t = new Term(IndexTweets.StatusField.ID.name, brb.get());
+            TermQuery tqnew = new TermQuery(t);
+
+            totalHitCollector = new TotalHitCountCollector();
+
+            searcher.search(tqnew, totalHitCollector);
+
+            if (totalHitCollector.getTotalHits() > 0) {
+              collector = TopScoreDocCollector.create(Math.max(0, totalHitCollector.getTotalHits()));
+              searcher.search(tqnew, collector);
+              hits = collector.topDocs().scoreDocs;
+
+              System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
+
+              for (int k = 0; k < hits.length; ++k) {
+                docId = hits[i].doc;
+                d = searcher.doc(docId);
+                System.out.println(d.get(IndexTweets.StatusField.ID.name));
+              }
+            }
             writer.commit();
             // writer.deleteDocuments(term);
             // writer.commit();
