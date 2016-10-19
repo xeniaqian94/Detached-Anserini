@@ -11,11 +11,14 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -72,6 +75,20 @@ class TweetPlaceNaiveSearcher {
       -95.3630556, -93.2636111, -84.4569444, -70.2558333, -90.197778, -81.669722, -79.976389 };
   private static final Double[] latitude = { 40.7141667, 41.8500000, 34.040667, 39.9522222, 38.8950000, 29.7630556,
       44.9800000, 39.1619444, 43.6613889, 38.627222, 41.482222, 40.439722 };
+
+  static <K, V extends Comparable<? super V>> List<Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
+
+    List<Entry<K, V>> sortedEntries = new ArrayList<Entry<K, V>>(map.entrySet());
+
+    Collections.sort(sortedEntries, new Comparator<Entry<K, V>>() {
+      @Override
+      public int compare(Entry<K, V> e1, Entry<K, V> e2) {
+        return e2.getValue().compareTo(e1.getValue());
+      }
+    });
+
+    return sortedEntries;
+  }
 
   public static void printMemoryUsage(boolean gc) {
 
@@ -266,6 +283,10 @@ class TweetPlaceNaiveSearcher {
 
             fields = new ArrayList<String>(Arrays.asList("timeline"));
 
+            Map<String, Double> map = new HashMap<String, Double>();
+
+            // System.out.println(entriesSortedByValues(map));
+
             Term t2 = new Term("userBackground", d.get(IndexTweets.StatusField.USER_ID.name));
             TermQuery tqnew = new TermQuery(t2);
             TopScoreDocCollector collector2 = TopScoreDocCollector.create(1);
@@ -287,6 +308,17 @@ class TweetPlaceNaiveSearcher {
                   int docIdEnum;
                   while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
                     String thisTerm = "text" + ":" + term.utf8ToString();
+
+                    Term termInstance = new Term("text", term);
+
+                    double kldivergence = docsEnum.freq()
+                        * Math.log(docsEnum.freq() * 1.0 * reader.numDocs() / (reader.totalTermFreq(termInstance) + 1));
+
+                    map.put(thisTerm, kldivergence);
+                  }
+                  List<Entry<String, Double>> expansionList = entriesSortedByValues(map);
+                  for (int m = 0; m < Math.min(10, expansionList.size()); m++) {
+                    String thisTerm = expansionList.get(m).getKey();
                     int termID;
                     if (!textFieldTerms.containsKey(thisTerm)) {
                       if (dict.containsKey(thisTerm)) {
@@ -299,9 +331,12 @@ class TweetPlaceNaiveSearcher {
                       }
 
                       docVectorsBinarySmoothingFout.write(termID + ":" + discount + " ");
+                      System.out.println(termID + ":" + expansionList.get(m).getValue() + " " + discount);
+
                     }
 
                   }
+
                 }
               }
 
@@ -374,6 +409,7 @@ class TweetPlaceNaiveSearcher {
         }
       }
     }
+
     SortedSet<String> terms = new TreeSet<String>(dict.keySet());
     for (String term : terms) {
       dictFout.write(term + " " + dict.get(term));
