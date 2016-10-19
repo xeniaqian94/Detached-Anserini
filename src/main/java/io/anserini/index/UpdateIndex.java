@@ -192,13 +192,19 @@ public class UpdateIndex {
     HashMap<Long, String> hm = new HashMap<Long, String>();
     try {
       while ((s = stream.nextRaw()) != null) {
-        status = DataObjectFactory.createStatus(s);
-        if (status.getText() == null) {
-          continue;
-        }
+        try {
+          status = DataObjectFactory.createStatus(s);
 
-        hm.put(status.getUser().getId(),
-            hm.get(status.getUser().getId()) + status.getText().replaceAll("[\\r\\n]+", " "));
+          if (status.getText() == null) {
+            continue;
+          }
+
+          hm.put(status.getUser().getId(),
+              hm.get(status.getUser().getId()) + status.getText().replaceAll("[\\r\\n]+", " "));
+
+        } catch (Exception e) {
+
+        }
       }
 
     } catch (Exception e) {
@@ -290,7 +296,8 @@ public class UpdateIndex {
 
           d = searcher.doc(docId);
 
-          if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))&&hm.containsKey(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name)))) {
+          if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))
+              && hm.containsKey(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name)))) {
             d.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
                 textOptions));
             System.out.println("Found a user hit");
