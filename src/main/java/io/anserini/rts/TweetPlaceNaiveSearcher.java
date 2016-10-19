@@ -318,6 +318,7 @@ class TweetPlaceNaiveSearcher {
                   }
                 }
               }
+              System.out.println(textFieldTerms.toString());
               List<Entry<String, Double>> expansionList = entriesSortedByValues(map);
               for (int m = 0; m < Math.min(10, expansionList.size()); m++) {
                 String thisTerm = expansionList.get(m).getKey();
@@ -333,7 +334,8 @@ class TweetPlaceNaiveSearcher {
                   }
 
                   docVectorsBinarySmoothingFout.write(termID + ":" + discount + " ");
-                  System.out.println(termID + ":" + expansionList.get(m).getValue() + " " + discount);
+
+                  System.out.println(thisTerm + " " + termID + ":" + expansionList.get(m).getValue() + " " + discount);
 
                 }
 
