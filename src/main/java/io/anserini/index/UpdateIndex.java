@@ -282,29 +282,29 @@ public class UpdateIndex {
 
       TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
 
-      Query hasFieldQuery = new ConstantScoreQuery(new FieldValueFilter("timeline"));
+//      Query hasFieldQuery = new ConstantScoreQuery(new FieldValueFilter("timeline"));
+//
+//      searcher.search(hasFieldQuery, totalHitCollector);
+//
+//      if (totalHitCollector.getTotalHits() > 0) {
+//        TopScoreDocCollector collector = TopScoreDocCollector.create(Math.max(0, totalHitCollector.getTotalHits()));
+//        searcher.search(finalQuery, collector);
+//        ScoreDoc[] hits = collector.topDocs().scoreDocs;
+//
+//       
+//        HashMap<String, Integer> hasHit = new HashMap<String, Integer>();
+//        int dupcount = 0;
+//        for (int i = 0; i < hits.length; ++i) {
+//          int docId = hits[i].doc;
+//          Document d;
+//
+//          d = searcher.doc(docId);
+//          
+//          System.out.println(d.getFields());
+//        }
+//      }
 
-      searcher.search(hasFieldQuery, totalHitCollector);
-
-      if (totalHitCollector.getTotalHits() > 0) {
-        TopScoreDocCollector collector = TopScoreDocCollector.create(Math.max(0, totalHitCollector.getTotalHits()));
-        searcher.search(finalQuery, collector);
-        ScoreDoc[] hits = collector.topDocs().scoreDocs;
-
-       
-        HashMap<String, Integer> hasHit = new HashMap<String, Integer>();
-        int dupcount = 0;
-        for (int i = 0; i < hits.length; ++i) {
-          int docId = hits[i].doc;
-          Document d;
-
-          d = searcher.doc(docId);
-          
-          System.out.println(d.getFields());
-        }
-      }
-
-      totalHitCollector = new TotalHitCountCollector();
+//      totalHitCollector = new TotalHitCountCollector();
       searcher.search(finalQuery, totalHitCollector);
 
       if (totalHitCollector.getTotalHits() > 0) {
@@ -325,6 +325,7 @@ public class UpdateIndex {
           if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))
               && hm.containsKey(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name)))) {
             d.removeField("timeline");
+            System.out.println(reader.getDocCount("timeline"));
             d.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
                 textOptions));
             System.out.println("Found a user hit");
