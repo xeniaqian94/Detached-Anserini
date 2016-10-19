@@ -237,7 +237,7 @@ public class UpdateIndex {
     final Directory dir = new SimpleFSDirectory(Paths.get(cmdline.getOptionValue(INDEX_OPTION)));
     final IndexWriterConfig config = new IndexWriterConfig(ANALYZER);
 
-    config.setOpenMode(IndexWriterConfig.OpenMode.APPEND);
+    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 
     final IndexWriter writer = new IndexWriter(dir, config);
 
@@ -338,38 +338,37 @@ public class UpdateIndex {
             System.out.println(reader.getDocCount("timeline"));
 
             Document d_new = new Document();
-            for (IndexableField field : d.getFields()) {
-              d_new.add(field);
-            }
+//            for (IndexableField field : d.getFields()) {
+//              d_new.add(field);
+//            }
             // System.out.println(d_new.getFields());
-            d_new.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
-                textOptions));
-            d_new.add(new StringField("label", "why", Store.YES));
+            d_new.add(new StringField("userBackground",d.get(IndexTweets.StatusField.USER_ID.name),Store.YES));
+            d_new.add(new StringField("timeline",hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))), Store.YES));
             // System.out.println(d_new.get());
             writer.addDocument(d_new);
             writer.commit();
 
-            t = new Term("label", "why");
-            TermQuery tqnew = new TermQuery(t);
-
-            totalHitCollector = new TotalHitCountCollector();
-
-            searcher.search(tqnew, totalHitCollector);
-
-            if (totalHitCollector.getTotalHits() > 0) {
-              collector = TopScoreDocCollector.create(Math.max(0, totalHitCollector.getTotalHits()));
-              searcher.search(tqnew, collector);
-              hits = collector.topDocs().scoreDocs;
-
-              System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
-
-              for (int k = 0; k < hits.length; k++) {
-                docId = hits[k].doc;
-                d = searcher.doc(docId);
-                System.out.println(d.get(IndexTweets.StatusField.ID.name));
-                System.out.println(d.get(IndexTweets.StatusField.PLACE.name));
-              }
-            }
+//            t = new Term("label", "why");
+//            TermQuery tqnew = new TermQuery(t);
+//
+//            totalHitCollector = new TotalHitCountCollector();
+//
+//            searcher.search(tqnew, totalHitCollector);
+//
+//            if (totalHitCollector.getTotalHits() > 0) {
+//              collector = TopScoreDocCollector.create(Math.max(0, totalHitCollector.getTotalHits()));
+//              searcher.search(tqnew, collector);
+//              hits = collector.topDocs().scoreDocs;
+//
+//              System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
+//
+//              for (int k = 0; k < hits.length; k++) {
+//                docId = hits[k].doc;
+//                d = searcher.doc(docId);
+//                System.out.println(d.get(IndexTweets.StatusField.ID.name));
+//                System.out.println(d.get(IndexTweets.StatusField.PLACE.name));
+//              }
+//            }
 
             // writer.deleteDocuments(term);
             // writer.commit();

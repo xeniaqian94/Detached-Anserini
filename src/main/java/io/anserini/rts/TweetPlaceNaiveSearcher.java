@@ -264,8 +264,31 @@ class TweetPlaceNaiveSearcher {
             }
 
             fields = new ArrayList<String>(Arrays.asList("timeline"));
+            
+            
+           Term t2 = new Term("userBackground", d.get(IndexTweets.StatusField.USER_ID.name));
+          TermQuery tqnew = new TermQuery(t2);
+//
+//          totalHitCollector = new TotalHitCountCollector();
+//
+//          searcher.search(tqnew, totalHitCollector);
+//
+//          if (totalHitCollector.getTotalHits() > 0) {
+            TopScoreDocCollector collector2 = TopScoreDocCollector.create(1);
+            searcher.search(tqnew, collector2);
+            ScoreDoc[] hits2 = collector2.topDocs().scoreDocs;
+//
+//            System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
+//
+            for (int k = 0; k < hits2.length; k++) {
+              docId = hits[k].doc;
+              d = searcher.doc(docId);
+              System.out.println(d.getFields());
+            }
+//          }
 
             for (String field : fields)
+              
               if (d.getField(field) != null) {
                 System.out.println("This document has timeline not null");
                 Terms terms = reader.getTermVector(docId, field);
