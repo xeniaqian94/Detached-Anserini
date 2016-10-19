@@ -20,7 +20,6 @@ import io.anserini.document.twitter.JsonStatusCorpusReader;
 import io.anserini.document.twitter.StatusStream;
 import io.anserini.index.twitter.TweetAnalyzer;
 import io.anserini.nrts.TweetSearcher;
-import io.anserini.rts.TitleExtractor;
 import io.anserini.rts.TweetStreamReader;
 import io.anserini.rts.TweetStreamReader.StatusField;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
