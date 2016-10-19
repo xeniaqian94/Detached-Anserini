@@ -314,8 +314,9 @@ public class UpdateIndex {
             }
             d_new.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
                 textOptions));
-            System.out.println(d_new.getFields());
+//            System.out.println(d_new.get());
             writer.addDocument(d_new);
+            writer.commit();
 //            writer.deleteDocuments(term);
 //            writer.commit();
 //            writer.addDocument(d);
