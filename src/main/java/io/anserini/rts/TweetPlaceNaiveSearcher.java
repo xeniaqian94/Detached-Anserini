@@ -281,9 +281,9 @@ class TweetPlaceNaiveSearcher {
 //            System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
 //
             for (int k = 0; k < hits2.length; k++) {
-              docId = hits[k].doc;
-              d = searcher.doc(docId);
-              System.out.println(d.getFields());
+              int docId2 = hits2[k].doc;
+              Document d2 = searcher.doc(docId2);
+              System.out.println(d2.getFields());
             }
 //          }
 
