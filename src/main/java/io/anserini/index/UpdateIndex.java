@@ -305,8 +305,15 @@ public class UpdateIndex {
             BytesRefBuilder brb = new BytesRefBuilder();
             NumericUtils.longToPrefixCodedBytes(Long.parseLong(d.get(IndexTweets.StatusField.ID.name)), 0, brb);
             Term term = new Term(IndexTweets.StatusField.ID.name, brb.get());
-            writer.updateDocument(term, d);
+            System.out.println(reader.getDocCount("timeline"));
+            writer.deleteDocuments(term);
             writer.commit();
+            writer.addDocument(d);
+            writer.commit();
+
+            System.out.println(reader.getDocCount("timeline"));
+            // writer.updateDocument(term, d);
+            // writer.commit();
 
           }
 

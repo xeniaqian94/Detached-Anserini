@@ -151,6 +151,7 @@ class TweetPlaceNaiveSearcher {
     BufferedWriter goldFout = new BufferedWriter(new FileWriter("clusteringDataset/gold_standard"));
     BufferedWriter docVectorsFout = new BufferedWriter(new FileWriter("clusteringDataset/docVectorsTF"));
     BufferedWriter docVectorsBinaryFout = new BufferedWriter(new FileWriter("clusteringDataset/docVectorsBinary"));
+    BufferedWriter docVectorsBinarySmoothingFout=new BufferedWriter(new FileWriter("clusteringDataset/docVectorsSmoothingBinary"));
     BufferedWriter dictFout = new BufferedWriter(new FileWriter("clusteringDataset/dict"));
     BufferedWriter rawTextFout = new BufferedWriter(new FileWriter("clusteringDataset/rawText"));
     BufferedWriter dfFout = new BufferedWriter(new FileWriter("clusteringDataset/df"));
@@ -254,6 +255,7 @@ class TweetPlaceNaiveSearcher {
 
                     docVectorsFout.write(termID + ":" + docsEnum.freq() + " ");
                     docVectorsBinaryFout.write(termID + ":1 ");
+                    docVectorsBinarySmoothingFout.write(termID + ":1 ");
 
                   }
                 }
@@ -285,8 +287,11 @@ class TweetPlaceNaiveSearcher {
                           dict.put(thisTerm, termID);
                           textFieldTerms.put(thisTerm, 1);
                         }
-                        docVectorsFout.write(termID + ":" + (discount * docsEnum.freq()) + " ");
-                        docVectorsBinaryFout.write(termID + ":" + discount + " ");
+                        // docVectorsFout.write(termID + ":" + (discount *
+                        // docsEnum.freq()) + " ");
+                        // docVectorsBinaryFout.write(termID + ":" + discount +
+                        // " ");
+                        docVectorsBinarySmoothingFout.write(termID + ":" + discount + " ");
                       }
 
                     }
@@ -317,6 +322,7 @@ class TweetPlaceNaiveSearcher {
                     }
                     docVectorsFout.write(termID + ":1 ");
                     docVectorsBinaryFout.write(termID + ":1 ");
+                    docVectorsBinarySmoothingFout.write(termID + ":1 ");
                   }
                 }
 
@@ -339,12 +345,16 @@ class TweetPlaceNaiveSearcher {
 
                 docVectorsFout.write(termID + ":1 ");
                 docVectorsBinaryFout.write(termID + ":1 ");
+                docVectorsBinarySmoothingFout.write(termID + ":1 ");
               }
             }
             docVectorsFout.newLine();
             docVectorsFout.flush();
             docVectorsBinaryFout.newLine();
             docVectorsBinaryFout.flush();
+
+            docVectorsBinarySmoothingFout.newLine();
+            docVectorsBinarySmoothingFout.flush();
 
             userIDFout.write(d.get(IndexTweets.StatusField.USER_ID.name));
             userIDFout.newLine();
@@ -368,6 +378,7 @@ class TweetPlaceNaiveSearcher {
     docVectorsFout.close();
     dictFout.close();
     docVectorsBinaryFout.close();
+    docVectorsBinarySmoothingFout.close();
     reader.close();
 
   }
