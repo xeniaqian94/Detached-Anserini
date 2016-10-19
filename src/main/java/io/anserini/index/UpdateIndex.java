@@ -343,7 +343,7 @@ public class UpdateIndex {
 //            }
             // System.out.println(d_new.getFields());
             d_new.add(new StringField("userBackground",d.get(IndexTweets.StatusField.USER_ID.name),Store.YES));
-            d_new.add(new StringField("timeline",hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))), Store.YES));
+            d_new.add(new Field("timeline",hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))), textOptions));
             // System.out.println(d_new.get());
             writer.addDocument(d_new);
             writer.commit();
