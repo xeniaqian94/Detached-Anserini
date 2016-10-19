@@ -291,7 +291,7 @@ public class UpdateIndex {
 
           d = searcher.doc(docId);
 
-          if (hm.containsKey(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name)))) {
+          if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))&&hm.containsKey(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name)))) {
             d.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
                 textOptions));
             System.out.println("Found a user hit");

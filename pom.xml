@@ -59,7 +59,7 @@
 							<mainClass>io.anserini.index.IndexTweetsDefaultStatusClass</mainClass>
 							<name>IndexTweetsDefaultStatusClass</name>
 						</program>
-						
+
 						<program>
 							<mainClass>io.anserini.index.IndexTweetsDefaultStatusClassNoLinkTitle</mainClass>
 							<name>IndexTweetsDefaultStatusClassNoLinkTitle</name>
@@ -72,9 +72,10 @@
 							<mainClass>io.anserini.index.UserPostFrequencyDistribution</mainClass>
 							<name>UserPostFrequencyDistribution</name>
 						</program>
-						
-						
-						
+						<program>
+							<mainClass>io.anserini.index.ReadTimelineAsBackground</mainClass>
+							<name>ReadTimelineAsBackground</name>
+						</program>
 						<program>
 							<mainClass>io.anserini.search.SearchTweets</mainClass>
 							<name>SearchTweets</name>
@@ -90,6 +91,10 @@
 						<program>
 							<mainClass>io.anserini.index.IndexWebCollection</mainClass>
 							<name>IndexWebCollection</name>
+						</program>
+						<program>
+							<mainClass>io.anserini.index.UpdateIndex</mainClass>
+							<name>UpdateIndex</name>
 						</program>
 						<program>
 							<mainClass>io.anserini.search.SearchWebCollection</mainClass>
