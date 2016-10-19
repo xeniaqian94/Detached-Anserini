@@ -268,8 +268,9 @@ class TweetPlaceNaiveSearcher {
                     } else {
                       termID = dict.size();
                       dict.put(thisTerm, termID);
-                      textFieldTerms.put(thisTerm, 1);
+
                     }
+                    textFieldTerms.put(thisTerm, 1);
 
                     docVectorsFout.write(termID + ":" + docsEnum.freq() + " ");
                     docVectorsBinaryFout.write(termID + ":1 ");
@@ -280,8 +281,6 @@ class TweetPlaceNaiveSearcher {
               }
 
             }
-
-            System.out.println(textFieldTerms.toString());
 
             fields = new ArrayList<String>(Arrays.asList("timeline"));
 
@@ -313,13 +312,14 @@ class TweetPlaceNaiveSearcher {
 
                     Term termInstance = new Term("text", term);
 
-                    double kldivergence = 
-                        Math.log(docsEnum.freq() * 1.0 * reader.numDocs() / (reader.totalTermFreq(termInstance) + 1));
-
-                    map.put(thisTerm, kldivergence);
+                    double kldivergence = Math
+                        .log(docsEnum.freq() * 1.0 * reader.numDocs() / (reader.totalTermFreq(termInstance) + 1));
+                    if (!thisTerm.contains("@"))
+                      map.put(thisTerm, kldivergence);
                   }
                 }
               }
+              System.out.println(textFieldTerms.toString());
 
               List<Entry<String, Double>> expansionList = entriesSortedByValues(map);
               for (int m = 0; m < Math.min(10, expansionList.size()); m++) {
