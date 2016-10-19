@@ -74,6 +74,7 @@ import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
@@ -306,10 +307,19 @@ public class UpdateIndex {
             NumericUtils.longToPrefixCodedBytes(Long.parseLong(d.get(IndexTweets.StatusField.ID.name)), 0, brb);
             Term term = new Term(IndexTweets.StatusField.ID.name, brb.get());
             System.out.println(reader.getDocCount("timeline"));
-            writer.deleteDocuments(term);
-            writer.commit();
-            writer.addDocument(d);
-            writer.commit();
+            
+            Document d_new=new Document();
+            for (IndexableField field:d.getFields()){
+              d_new.add(field);
+            }
+            d_new.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
+                textOptions));
+            System.out.println(d_new.getFields());
+            writer.addDocument(d_new);
+//            writer.deleteDocuments(term);
+//            writer.commit();
+//            writer.addDocument(d);
+//            writer.commit();
 
             System.out.println(reader.getDocCount("timeline"));
             // writer.updateDocument(term, d);
