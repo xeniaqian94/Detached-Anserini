@@ -80,7 +80,9 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.DocIdSetIterator;
+import org.apache.lucene.search.FieldValueFilter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
@@ -280,6 +282,29 @@ public class UpdateIndex {
 
       TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
 
+      Query hasFieldQuery = new ConstantScoreQuery(new FieldValueFilter("timeline"));
+
+      searcher.search(hasFieldQuery, totalHitCollector);
+
+      if (totalHitCollector.getTotalHits() > 0) {
+        TopScoreDocCollector collector = TopScoreDocCollector.create(Math.max(0, totalHitCollector.getTotalHits()));
+        searcher.search(finalQuery, collector);
+        ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+       
+        HashMap<String, Integer> hasHit = new HashMap<String, Integer>();
+        int dupcount = 0;
+        for (int i = 0; i < hits.length; ++i) {
+          int docId = hits[i].doc;
+          Document d;
+
+          d = searcher.doc(docId);
+          
+          System.out.println(d.getFields());
+        }
+      }
+
+      totalHitCollector = new TotalHitCountCollector();
       searcher.search(finalQuery, totalHitCollector);
 
       if (totalHitCollector.getTotalHits() > 0) {
@@ -307,20 +332,20 @@ public class UpdateIndex {
             NumericUtils.longToPrefixCodedBytes(Long.parseLong(d.get(IndexTweets.StatusField.ID.name)), 0, brb);
             Term term = new Term(IndexTweets.StatusField.ID.name, brb.get());
             System.out.println(reader.getDocCount("timeline"));
-            
-            Document d_new=new Document();
-            for (IndexableField field:d.getFields()){
+
+            Document d_new = new Document();
+            for (IndexableField field : d.getFields()) {
               d_new.add(field);
             }
             d_new.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
                 textOptions));
-//            System.out.println(d_new.get());
+            // System.out.println(d_new.get());
             writer.addDocument(d_new);
             writer.commit();
-//            writer.deleteDocuments(term);
-//            writer.commit();
-//            writer.addDocument(d);
-//            writer.commit();
+            // writer.deleteDocuments(term);
+            // writer.commit();
+            // writer.addDocument(d);
+            // writer.commit();
 
             System.out.println(reader.getDocCount("timeline"));
             // writer.updateDocument(term, d);
