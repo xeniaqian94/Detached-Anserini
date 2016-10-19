@@ -314,7 +314,7 @@ class TweetPlaceNaiveSearcher {
 
                     double kldivergence = Math
                         .log(docsEnum.freq() * 1.0 * reader.numDocs() / (reader.totalTermFreq(termInstance) + 1));
-                    if (!thisTerm.contains("@"))
+                    if (!thisTerm.contains("@") && dict.containsKey(thisTerm))
                       map.put(thisTerm, kldivergence);
                   }
                 }
