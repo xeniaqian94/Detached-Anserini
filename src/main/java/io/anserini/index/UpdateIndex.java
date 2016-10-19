@@ -345,7 +345,7 @@ public class UpdateIndex {
             System.out.println(d_new.getFields());
             d_new.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
                 textOptions));
-            d_new.add(new StringField("label","why",Store.YES));
+            d_new.add(new StringField("label", "why", Store.YES));
             // System.out.println(d_new.get());
             writer.addDocument(d_new);
             writer.commit();
@@ -365,13 +365,13 @@ public class UpdateIndex {
               System.out.println("City " + cityName[city] + " " + collector.getTotalHits() + " hits.");
 
               for (int k = 0; k < hits.length; k++) {
-                docId = hits[i].doc;
+                docId = hits[k].doc;
                 d = searcher.doc(docId);
                 System.out.println(d.get(IndexTweets.StatusField.ID.name));
                 System.out.println(d.get(IndexTweets.StatusField.PLACE.name));
               }
             }
-            
+
             // writer.deleteDocuments(term);
             // writer.commit();
             // writer.addDocument(d);
