@@ -1,4 +1,4 @@
-Anserini
+Anserini - Detached
 ========
 
 Build using Maven:
