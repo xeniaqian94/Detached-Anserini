@@ -386,6 +386,7 @@ public class UpdateIndex {
       }
     }
     reader.close();
+    writer.close();
 
   }
 }
