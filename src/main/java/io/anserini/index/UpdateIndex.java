@@ -324,7 +324,8 @@ public class UpdateIndex {
 
           if (userIDList.contains(d.get(IndexTweets.StatusField.USER_ID.name))
               && hm.containsKey(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name)))) {
-            d.removeField("timeline");
+            for (int j=0;j<50;j++)
+              d.removeField("timeline");
             System.out.println(reader.getDocCount("timeline"));
             d.add(new Field("timeline", hm.get(Long.parseLong(d.get(IndexTweets.StatusField.USER_ID.name))),
                 textOptions));
