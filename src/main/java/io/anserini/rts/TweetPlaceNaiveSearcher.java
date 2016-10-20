@@ -168,8 +168,7 @@ class TweetPlaceNaiveSearcher {
     BufferedWriter goldFout = new BufferedWriter(new FileWriter("clusteringDataset/gold_standard"));
     BufferedWriter docVectorsFout = new BufferedWriter(new FileWriter("clusteringDataset/docVectorsTF"));
     BufferedWriter docVectorsBinaryFout = new BufferedWriter(new FileWriter("clusteringDataset/docVectorsBinary"));
-    BufferedWriter docVectorsBinarySmoothingFout = new BufferedWriter(
-        new FileWriter("clusteringDataset/docVectorsSmoothingBinary"));
+
     BufferedWriter dictFout = new BufferedWriter(new FileWriter("clusteringDataset/dict"));
     BufferedWriter rawTextFout = new BufferedWriter(new FileWriter("clusteringDataset/rawText"));
     BufferedWriter dfFout = new BufferedWriter(new FileWriter("clusteringDataset/df"));
@@ -178,7 +177,11 @@ class TweetPlaceNaiveSearcher {
                                                                 // termID
     Map<Integer, Integer> df = new HashMap<Integer, Integer>();
     int docCount = 0;
-    double discount = 0.5d;
+    double[] discount = new double[] { 0.1d, 0.2d, 0.3d, 0.4d, 0.5d, 0.6d, 0.7d, 0.8d, 0.9d, 1.0d };
+    BufferedWriter[] docVectorsBinarySmoothingFout = new BufferedWriter[discount.length];
+    for (int l = 0; l < discount.length; l++)
+      docVectorsBinarySmoothingFout[l] = new BufferedWriter(
+          new FileWriter("clusteringDataset/docVectorsSmoothingBinary_" + l));
 
     for (int city = 0; city < cityName.length; city++) {
 
@@ -274,7 +277,8 @@ class TweetPlaceNaiveSearcher {
 
                     docVectorsFout.write(termID + ":" + docsEnum.freq() + " ");
                     docVectorsBinaryFout.write(termID + ":1 ");
-                    docVectorsBinarySmoothingFout.write(termID + ":1 ");
+                    for (int l = 0; l < discount.length; l++)
+                      docVectorsBinarySmoothingFout[l].write(termID + ":1 ");
 
                   }
                 }
@@ -322,7 +326,7 @@ class TweetPlaceNaiveSearcher {
               System.out.println(textFieldTerms.toString());
 
               List<Entry<String, Double>> expansionList = entriesSortedByValues(map);
-              for (int m = 0; m < Math.min(10, expansionList.size()); m++) {
+              for (int m = 0; m < Math.min(Math.max(textFieldTerms.size(), 10), expansionList.size()); m++) {
                 String thisTerm = expansionList.get(m).getKey();
                 int termID;
                 if (!textFieldTerms.containsKey(thisTerm)) {
@@ -335,7 +339,8 @@ class TweetPlaceNaiveSearcher {
                     textFieldTerms.put(thisTerm, 1);
                   }
 
-                  docVectorsBinarySmoothingFout.write(termID + ":" + discount + " ");
+                  for (int l = 0; l < discount.length; l++)
+                    docVectorsBinarySmoothingFout[l].write(termID + ":" + discount[l] + " ");
 
                   System.out.println(thisTerm + " " + termID + ":" + expansionList.get(m).getValue() + " " + discount);
 
@@ -367,7 +372,8 @@ class TweetPlaceNaiveSearcher {
                     }
                     docVectorsFout.write(termID + ":1 ");
                     docVectorsBinaryFout.write(termID + ":1 ");
-                    docVectorsBinarySmoothingFout.write(termID + ":1 ");
+                    for (int l = 0; l < discount.length; l++)
+                      docVectorsBinarySmoothingFout[l].write(termID + ":1 ");
                   }
                 }
 
@@ -390,16 +396,18 @@ class TweetPlaceNaiveSearcher {
 
                 docVectorsFout.write(termID + ":1 ");
                 docVectorsBinaryFout.write(termID + ":1 ");
-                docVectorsBinarySmoothingFout.write(termID + ":1 ");
+                for (int l = 0; l < discount.length; l++)
+                  docVectorsBinarySmoothingFout[l].write(termID + ":1 ");
               }
             }
             docVectorsFout.newLine();
             docVectorsFout.flush();
             docVectorsBinaryFout.newLine();
             docVectorsBinaryFout.flush();
-
-            docVectorsBinarySmoothingFout.newLine();
-            docVectorsBinarySmoothingFout.flush();
+            for (int l = 0; l < discount.length; l++) {
+              docVectorsBinarySmoothingFout[l].newLine();
+              docVectorsBinarySmoothingFout[l].flush();
+            }
 
             userIDFout.write(d.get(IndexTweets.StatusField.USER_ID.name));
             userIDFout.newLine();
@@ -424,7 +432,8 @@ class TweetPlaceNaiveSearcher {
     docVectorsFout.close();
     dictFout.close();
     docVectorsBinaryFout.close();
-    docVectorsBinarySmoothingFout.close();
+    for (int l = 0; l < discount.length; l++)
+      docVectorsBinarySmoothingFout[l].close();
     reader.close();
 
   }
