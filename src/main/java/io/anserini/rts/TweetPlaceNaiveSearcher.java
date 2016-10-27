@@ -371,7 +371,7 @@ class TweetPlaceNaiveSearcher {
                   for (int l = 0; l < discount.length; l++)
                     docVectorsBinarySmoothingFout[l].write(termID + ":" + discount[l] + " ");
 
-                  System.out.println(thisTerm + " " + termID + ":" + expansionList.get(m).getValue());
+                  System.out.println(thisTerm + " " + ":" + expansionList.get(m).getValue());
 
                 }
 
