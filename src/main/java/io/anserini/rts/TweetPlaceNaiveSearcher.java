@@ -177,11 +177,16 @@ class TweetPlaceNaiveSearcher {
                                                                 // termID
     Map<Integer, Integer> df = new HashMap<Integer, Integer>();
     int docCount = 0;
-    double[] discount = new double[] { 0.1d, 0.2d, 0.3d, 0.4d, 0.5d, 0.6d, 0.7d, 0.8d, 0.9d, 1.0d };
+    // double[] discount = new double[] { 0.1d, 0.2d, 0.3d, 0.4d, 0.5d, 0.6d,
+    // 0.7d, 0.8d, 0.9d, 1.0d };
+    double[] discount = new double[] { 1.0d };
     BufferedWriter[] docVectorsBinarySmoothingFout = new BufferedWriter[discount.length];
     for (int l = 0; l < discount.length; l++)
       docVectorsBinarySmoothingFout[l] = new BufferedWriter(
           new FileWriter("clusteringDataset/docVectorsSmoothingBinary_" + l));
+
+    HashMap<String, Integer> termFrequencyPittsburgh = new HashMap<String, Integer>();
+    HashMap<String, Integer> termFrequencyNonPittsburgh = new HashMap<String, Integer>();
 
     for (int city = 0; city < cityName.length; city++) {
 
@@ -273,6 +278,19 @@ class TweetPlaceNaiveSearcher {
                       dict.put(thisTerm, termID);
 
                     }
+                    if (city == 11) {
+                      if (termFrequencyPittsburgh.containsKey(thisTerm))
+                        termFrequencyPittsburgh.put(thisTerm, termFrequencyPittsburgh.get(thisTerm) + docsEnum.freq());
+                      else
+                        termFrequencyPittsburgh.put(thisTerm, docsEnum.freq());
+                    } else {
+
+                      if (termFrequencyNonPittsburgh.containsKey(thisTerm))
+                        termFrequencyNonPittsburgh.put(thisTerm,
+                            termFrequencyNonPittsburgh.get(thisTerm) + docsEnum.freq());
+                      else
+                        termFrequencyNonPittsburgh.put(thisTerm, docsEnum.freq());
+                    }
                     textFieldTerms.put(thisTerm, 1);
 
                     docVectorsFout.write(termID + ":" + docsEnum.freq() + " ");
@@ -315,9 +333,12 @@ class TweetPlaceNaiveSearcher {
                     String thisTerm = "text" + ":" + term.utf8ToString();
 
                     Term termInstance = new Term("text", term);
+                    double kldivergence = 1.0 * termFrequencyPittsburgh.get(thisTerm)
+                        / termFrequencyNonPittsburgh.get(thisTerm);
 
-                    double kldivergence = Math
-                        .log(docsEnum.freq() * 1.0 * reader.numDocs() / (reader.totalTermFreq(termInstance) + 1));
+                    // double kldivergence = Math
+                    // .log(docsEnum.freq() * 1.0 * reader.numDocs() /
+                    // (reader.totalTermFreq(termInstance) + 1));
                     if (!thisTerm.contains("@") && dict.containsKey(thisTerm))
                       map.put(thisTerm, kldivergence);
                   }
@@ -326,25 +347,30 @@ class TweetPlaceNaiveSearcher {
               System.out.println(textFieldTerms.toString());
 
               List<Entry<String, Double>> expansionList = entriesSortedByValues(map);
-              for (int m = 0; m < Math.min(Math.max(textFieldTerms.size(), 10), expansionList.size()); m++) {
-                String thisTerm = expansionList.get(m).getKey();
-                int termID;
-                if (!textFieldTerms.containsKey(thisTerm)) {
-                  if (dict.containsKey(thisTerm)) {
-                    termID = dict.get(thisTerm);
+              // for (int m = 0; m < Math.min(Math.max(textFieldTerms.size(),
+              // 10), expansionList.size()); m++) {
+              for (int m = 0; m < expansionList.size(); m++) {
+                if (expansionList.get(m).getValue() > 1) {
+                  String thisTerm = expansionList.get(m).getKey();
+                  int termID;
+                  if (!textFieldTerms.containsKey(thisTerm)) {
+                    if (dict.containsKey(thisTerm)) {
+                      termID = dict.get(thisTerm);
 
-                  } else {
-                    termID = dict.size();
-                    dict.put(thisTerm, termID);
-                    textFieldTerms.put(thisTerm, 1);
+                    } else {
+                      termID = dict.size();
+                      dict.put(thisTerm, termID);
+                      textFieldTerms.put(thisTerm, 1);
+                    }
+
+                    for (int l = 0; l < discount.length; l++)
+                      docVectorsBinarySmoothingFout[l].write(termID + ":" + discount[l] + " ");
+
+                    System.out.println(thisTerm + " " + termID + ":" + expansionList.get(m).getValue());
+
                   }
-
-                  for (int l = 0; l < discount.length; l++)
-                    docVectorsBinarySmoothingFout[l].write(termID + ":" + discount[l] + " ");
-
-                  System.out.println(thisTerm + " " + termID + ":" + expansionList.get(m).getValue() + " " + discount);
-
-                }
+                } else
+                  break;
 
               }
 
