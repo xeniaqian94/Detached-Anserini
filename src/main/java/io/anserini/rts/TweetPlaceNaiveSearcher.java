@@ -321,7 +321,7 @@ class TweetPlaceNaiveSearcher {
               Document d2 = searcher.doc(docId2);
               // System.out.println(d2.getFields());
 
-              System.out.println("This userBackgroundFile has timeline not null");
+              System.out.println("This userBackgroundFile has timeline not null " + docId2);
               Terms terms = reader.getTermVector(docId2, "timeline");
               if (terms != null && terms.size() > 0) {
                 TermsEnum termsEnum = terms.iterator();
@@ -353,30 +353,27 @@ class TweetPlaceNaiveSearcher {
               System.out.println(textFieldTerms.toString());
 
               List<Entry<String, Double>> expansionList = entriesSortedByValues(map);
-              // for (int m = 0; m < Math.min(Math.max(textFieldTerms.size(),
-              // 10), expansionList.size()); m++) {
-              for (int m = 0; m < expansionList.size(); m++) {
-                if (expansionList.get(m).getValue() > 1) {
-                  String thisTerm = expansionList.get(m).getKey();
-                  int termID;
-                  if (!textFieldTerms.containsKey(thisTerm)) {
-                    if (dict.containsKey(thisTerm)) {
-                      termID = dict.get(thisTerm);
+              for (int m = 0; m < Math.min(Math.max(textFieldTerms.size(), 10), expansionList.size()); m++) {
+                // for (int m = 0; m < expansionList.size(); m++) {
+                // if (expansionList.get(m).getValue() > 1) {
+                String thisTerm = expansionList.get(m).getKey();
+                int termID;
+                if (!textFieldTerms.containsKey(thisTerm)) {
+                  if (dict.containsKey(thisTerm)) {
+                    termID = dict.get(thisTerm);
 
-                    } else {
-                      termID = dict.size();
-                      dict.put(thisTerm, termID);
-                      textFieldTerms.put(thisTerm, 1);
-                    }
-
-                    for (int l = 0; l < discount.length; l++)
-                      docVectorsBinarySmoothingFout[l].write(termID + ":" + discount[l] + " ");
-
-                    System.out.println(thisTerm + " " + termID + ":" + expansionList.get(m).getValue());
-
+                  } else {
+                    termID = dict.size();
+                    dict.put(thisTerm, termID);
+                    textFieldTerms.put(thisTerm, 1);
                   }
-                } else
-                  break;
+
+                  for (int l = 0; l < discount.length; l++)
+                    docVectorsBinarySmoothingFout[l].write(termID + ":" + discount[l] + " ");
+
+                  System.out.println(thisTerm + " " + termID + ":" + expansionList.get(m).getValue());
+
+                }
 
               }
 
