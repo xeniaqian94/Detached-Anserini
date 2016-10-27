@@ -333,8 +333,14 @@ class TweetPlaceNaiveSearcher {
                     String thisTerm = "text" + ":" + term.utf8ToString();
 
                     Term termInstance = new Term("text", term);
-                    double kldivergence = 1.0 * termFrequencyPittsburgh.get(thisTerm)
-                        / termFrequencyNonPittsburgh.get(thisTerm);
+                    double kldivergence = 0;
+                    if (termFrequencyPittsburgh.containsKey(thisTerm)
+                        && termFrequencyNonPittsburgh.containsKey(thisTerm))
+                      kldivergence = 1.0 * (1 + termFrequencyPittsburgh.get(thisTerm))
+                          / (1 + termFrequencyNonPittsburgh.get(thisTerm));
+                    else if (termFrequencyPittsburgh.containsKey(thisTerm)
+                        && !termFrequencyNonPittsburgh.containsKey(thisTerm))
+                      kldivergence = 1.0 * (1 + termFrequencyPittsburgh.get(thisTerm));
 
                     // double kldivergence = Math
                     // .log(docsEnum.freq() * 1.0 * reader.numDocs() /
